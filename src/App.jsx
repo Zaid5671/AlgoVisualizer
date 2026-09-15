@@ -85,10 +85,7 @@ function AlgorithmLayout() {
           </div>
         </div>
 
-        <div className="tabs">
-          <div className="tab active">watch</div>
-          <div className="tab">practice it yourself</div>
-        </div>
+
 
         {activeAlgorithm.category === 'Pathfinding' ? (
           <PathfindingView activeAlgorithm={activeAlgorithm} onStep={setCurrentSnapshot} />

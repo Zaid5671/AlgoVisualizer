@@ -1,6 +1,8 @@
-import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { useState } from "react";
+import { PanelLeftClose, PanelLeftOpen, X } from "lucide-react";
 
 export function Sidebar({ activeKey, onSelect, algorithms, isOpen, onToggle }) {
+  const [isAboutOpen, setIsAboutOpen] = useState(false);
   const activeAlgorithm = algorithms[activeKey];
   const activeCategory = activeAlgorithm.category;
 
@@ -109,8 +111,7 @@ export function Sidebar({ activeKey, onSelect, algorithms, isOpen, onToggle }) {
             <div className="sidebar-separator" style={{ marginTop: '2rem' }}></div>
             
             <div className="sidebar-footer" style={{ marginTop: 'auto', paddingTop: '2rem' }}>
-              <span className="sidebar-link">take a quiz ?</span>
-              <span className="sidebar-link pink">why I built this ?</span>
+              <span className="sidebar-link pink" onClick={() => setIsAboutOpen(true)} style={{ cursor: 'pointer' }}>why I built this ?</span>
               <p>made over one very caffeinated week. click around, break stuff - it resets on refresh :)</p>
             </div>
           </>
@@ -142,6 +143,46 @@ export function Sidebar({ activeKey, onSelect, algorithms, isOpen, onToggle }) {
           </div>
         )}
       </div>
+
+      {/* ABOUT MODAL */}
+      {isAboutOpen && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 9999,
+          display: 'flex', justifyContent: 'center', alignItems: 'center',
+          backdropFilter: 'blur(4px)'
+        }}>
+          <div style={{
+            backgroundColor: 'var(--surface-color, #fbf9f6)',
+            border: '4px solid black',
+            boxShadow: '8px 8px 0px rgba(0,0,0,1)',
+            width: '90%', maxWidth: '600px',
+            maxHeight: '90vh', overflowY: 'auto',
+            padding: '2rem', position: 'relative'
+          }}>
+            <button 
+              onClick={() => setIsAboutOpen(false)}
+              style={{
+                position: 'absolute', top: '1rem', right: '1rem',
+                background: 'none', border: '2px solid black',
+                cursor: 'pointer', padding: '0.25rem',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                backgroundColor: 'var(--accent-pink)'
+              }}
+            >
+              <X size={20} />
+            </button>
+            
+            <h2 style={{ marginTop: 0, fontSize: '2rem', borderBottom: '2px solid black', paddingBottom: '1rem', fontFamily: 'Space Grotesk, sans-serif' }}>
+              why I built this
+            </h2>
+            
+            <div style={{ fontSize: '1.1rem', lineHeight: 1.6, marginTop: '2rem', fontFamily: 'Space Grotesk, sans-serif' }}>
+              <p>Content coming soon...</p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
