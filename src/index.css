@@ -511,7 +511,7 @@ h1 {
   margin: 1rem 0;
 }
 
-.grid {
+.pathfinding-grid {
   display: flex;
   flex-direction: column;
   border: 2px solid var(--border-color);

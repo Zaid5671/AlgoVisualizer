@@ -160,7 +160,7 @@ export function PathfindingView({ activeAlgorithm, onStep }) {
       </div>
 
       <div className="grid-container" onMouseLeave={handleMouseUp}>
-        <div className="grid">
+        <div className="pathfinding-grid">
           {grid.map((row, rowIdx) => {
             return (
               <div key={rowIdx} className="grid-row">
