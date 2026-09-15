@@ -1,4 +1,4 @@
-import { Play, Pause, SkipBack, SkipForward, RotateCcw, VolumeX } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, RotateCcw } from 'lucide-react';
 
 export function PlaybackControls({ playback }) {
   const { state, actions } = playback;
@@ -43,16 +43,6 @@ export function PlaybackControls({ playback }) {
             {s}x
           </button>
         ))}
-      </div>
-
-      <div className="controls-group" style={{ marginLeft: '0.5rem' }}>
-        <button className="btn-icon">
-          <VolumeX size={18} strokeWidth={2.5} />
-        </button>
-        <button className="btn-shuffle" onClick={actions.reset}>
-          shuffle array
-        </button>
-        <span className="help-text" style={{ marginLeft: '0.5rem' }}>SPACE = PLAY  ·  → = STEP</span>
       </div>
     </div>
   );

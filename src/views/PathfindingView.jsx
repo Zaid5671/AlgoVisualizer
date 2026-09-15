@@ -28,7 +28,7 @@ const createInitialGrid = () => {
   return grid;
 };
 
-export function PathfindingView({ activeAlgorithm }) {
+export function PathfindingView({ activeAlgorithm, onStep }) {
   const [grid, setGrid] = useState(() => createInitialGrid());
   const [startNode, setStartNode] = useState(DEFAULT_START);
   const [endNode, setEndNode] = useState(DEFAULT_END);
@@ -49,11 +49,28 @@ export function PathfindingView({ activeAlgorithm }) {
     }
   }, [supportsWeights]);
 
+  const clearGrid = (keepWalls = false) => {
+    setGrid(prev => prev.map(row => 
+      row.map(node => ({
+        ...node,
+        isWall: keepWalls ? node.isWall : false,
+        weight: keepWalls ? node.weight : 1
+      }))
+    ));
+    playback.actions.reset();
+  };
+
   // Package data for the generator (memoized to prevent infinite re-renders)
   const inputData = useMemo(() => ({ grid, startNode, endNode }), [grid, startNode, endNode]);
   const playback = usePlayback(activeAlgorithm.generator, inputData);
 
   const { snapshot, currentIndex, isPlaying } = playback.state;
+
+  useEffect(() => {
+    if (snapshot && typeof onStep === 'function') {
+      onStep(snapshot);
+    }
+  }, [snapshot, onStep]);
 
   const applyDragAction = (row, col, action) => {
     setGrid(prev => {

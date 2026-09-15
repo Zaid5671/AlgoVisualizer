@@ -11,7 +11,7 @@ const CANVAS_WIDTH = 800;
 const CANVAS_HEIGHT = 400;
 const NODE_RADIUS = 20;
 
-export function GraphView({ activeAlgorithm }) {
+export function GraphView({ activeAlgorithm, onStep }) {
   const isDirected = activeAlgorithm.id === 'tarjans';
   
   const [nodeCount, setNodeCount] = useState(8);
@@ -62,6 +62,13 @@ export function GraphView({ activeAlgorithm }) {
   
   const playback = usePlayback(activeAlgorithm.generator, inputData);
   const { snapshot } = playback.state;
+
+  // Pass the active line back to App.jsx for the code tracer
+  useEffect(() => {
+    if (snapshot && typeof onStep === 'function') {
+      onStep(snapshot);
+    }
+  }, [snapshot, onStep]);
 
   // --- Interaction Logic ---
   const handleNodeMouseDown = (id, e) => {

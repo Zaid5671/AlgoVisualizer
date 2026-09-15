@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { PlaybackControls } from '../components/PlaybackControls';
 import { usePlayback } from '../engine/usePlayback';
 import { Code2 } from 'lucide-react';
@@ -7,7 +7,7 @@ import { ChatbotWidget } from '../components/ChatbotWidget';
 import { BACKTRACKING_PUZZLES } from '../data/backtrackingPuzzles';
 import { PRESET_GRAPHS } from '../data/presetGraphs';
 
-export function BacktrackingView({ activeAlgorithm }) {
+export function BacktrackingView({ activeAlgorithm, onStep }) {
   const [showPseudocode, setShowPseudocode] = useState(false);
 
   // Setup inputData based on algorithm
@@ -29,6 +29,12 @@ export function BacktrackingView({ activeAlgorithm }) {
 
   const playback = usePlayback(activeAlgorithm.generator, inputData);
   const { snapshot } = playback.state;
+
+  useEffect(() => {
+    if (snapshot && typeof onStep === 'function') {
+      onStep(snapshot);
+    }
+  }, [snapshot, onStep]);
 
   if (!snapshot) return <div>Loading...</div>;
 
