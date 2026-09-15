@@ -1,4 +1,4 @@
-# Specimen: AlgoTracker
+# Specimen: AlgoVisualizer
 
 **Specimen** is a highly interactive, neo-brutalist Algorithm Visualizer. It provides a "lil algorithm lab" environment where developers and students can observe complex algorithms executing step-by-step in real-time. 
 
