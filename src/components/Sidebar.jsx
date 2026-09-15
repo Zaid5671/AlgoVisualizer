@@ -177,8 +177,11 @@ export function Sidebar({ activeKey, onSelect, algorithms, isOpen, onToggle }) {
               why I built this
             </h2>
             
-            <div style={{ fontSize: '1.1rem', lineHeight: 1.6, marginTop: '2rem', fontFamily: 'Space Grotesk, sans-serif' }}>
-              <p>Content coming soon...</p>
+            <div style={{ fontSize: '1.1rem', lineHeight: 1.6, marginTop: '2rem', fontFamily: 'Space Grotesk, sans-serif', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <p>I’ve always found algorithms easier to understand when I can see what’s actually happening, not just read the theory.</p>
+              <p>Specimen started from that idea: a small space to slow algorithms down, step through every decision, and make the logic feel a little less intimidating.</p>
+              <p>I built this to make DSA more visual, interactive, and fun to explore — whether you’re learning from scratch, preparing for interviews, or just curious about how an algorithm works.</p>
+              <p>Hopefully, it helps you understand algorithms instead of just memorizing them.</p>
             </div>
           </div>
         </div>
