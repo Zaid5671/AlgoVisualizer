@@ -98,21 +98,62 @@ User Question: ${input}`
         contents: [{ parts: [{ text: contextPrompt }] }]
       });
 
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 15000);
-
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: requestBody,
-        signal: controller.signal
-      });
-
-      clearTimeout(timeoutId);
-      const data = await response.json();
+      const isLocalDev = import.meta.env.DEV; // Vite provides this to detect local 'npm run dev'
       
-      if (data.error) {
-        throw new Error(data.error.message || 'Unknown server error');
+      let data = null;
+
+      if (isLocalDev) {
+        // LOCAL DEV: Fall back to direct frontend fetch for easy local testing without a backend server
+        const localApiKey = import.meta.env.VITE_GEMINI_API_KEY;
+        if (!localApiKey) {
+          throw new Error("Local Dev Error: VITE_GEMINI_API_KEY is missing from your .env file.");
+        }
+
+        const modelsToTry = ['gemini-3.8-flash', 'gemini-3.7-flash', 'gemini-3.5-flash-lite', 'gemini-3.5-flash'];
+        let lastError = null;
+
+        for (const model of modelsToTry) {
+          try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${localApiKey}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: requestBody,
+              signal: controller.signal
+            });
+
+            clearTimeout(timeoutId);
+            const json = await response.json();
+            if (json.error) throw new Error(json.error.message);
+            
+            data = json;
+            break;
+          } catch (err) {
+            lastError = err;
+          }
+        }
+        if (!data) throw new Error(lastError ? lastError.message : "All fallback models failed.");
+
+      } else {
+        // PRODUCTION: Use the secure Vercel serverless proxy
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: requestBody,
+          signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+        data = await response.json();
+        
+        if (data.error) {
+          throw new Error(data.error.message || 'Unknown server error');
+        }
       }
 
       if (!data.candidates || data.candidates.length === 0) {
