@@ -80,12 +80,7 @@ export function ChatbotWidget({ activeAlgorithm, snapshot, offsetRight = '2rem' 
     setInput('');
     setIsTyping(true);
 
-    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-    if (!apiKey) {
-      setMessages(prev => [...prev, { role: 'assistant', content: "Error: VITE_GEMINI_API_KEY not found in .env file.", stepLabel: 'ERR' }]);
-      setIsTyping(false);
-      return;
-    }
+
 
     try {
       const contextPrompt = snapshot 
@@ -103,39 +98,25 @@ User Question: ${input}`
         contents: [{ parts: [{ text: contextPrompt }] }]
       });
 
-      const modelsToTry = ['gemini-3.8-flash', 'gemini-3.7-flash', 'gemini-3.5-flash-lite'];
-      let data = null;
-      let lastError = null;
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
 
-      for (const model of modelsToTry) {
-        try {
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 6000);
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: requestBody,
+        signal: controller.signal
+      });
 
-          const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: requestBody,
-            signal: controller.signal
-          });
-
-          clearTimeout(timeoutId);
-          const json = await response.json();
-          
-          if (json.error) {
-            throw new Error(json.error.message);
-          }
-
-          data = json;
-          break; 
-        } catch (err) {
-          console.warn(`Model ${model} failed:`, err.message);
-          lastError = err;
-        }
+      clearTimeout(timeoutId);
+      const data = await response.json();
+      
+      if (data.error) {
+        throw new Error(data.error.message || 'Unknown server error');
       }
 
-      if (!data) {
-        throw new Error(lastError ? lastError.message : "All fallback models failed.");
+      if (!data.candidates || data.candidates.length === 0) {
+         throw new Error("No response received from AI models.");
       }
 
       const botReply = data.candidates[0].content.parts[0].text;
