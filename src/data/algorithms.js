@@ -36,16 +36,16 @@ export const ALGORITHMS = {
       space: 'O(1)'
     },
     generator: generateBubbleSortSnapshots,
-    pseudocode: `// Loop until a full pass happens without any swaps
-do
-  swapped = false
-  // Iterate through the unsorted portion of the array
-  for i = 1 to indexOfLastUnsortedElement-1
-    // If the left element is heavier, they are out of order
-    if leftElement > rightElement
-      swap(leftElement, rightElement) // Push the heavier element to the right
-      swapped = true
-while swapped`
+    pseudocode: `for (let i = 0; i < N; i++) {
+  let swapped = false;
+  for (let j = 0; j < N - i - 1; j++) {
+    if (arr[j] > arr[j + 1]) {
+      swap(arr[j], arr[j + 1]);
+      swapped = true;
+    }
+  }
+  if (!swapped) break;
+}`
   },
   selectionSort: {
     id: 'selectionSort',
@@ -59,19 +59,17 @@ while swapped`
       space: 'O(1)'
     },
     generator: generateSelectionSortSnapshots,
-    pseudocode: `// Repeat for every position in the array
-for i = 0 to array.length - 1
-  // Assume the current position holds the minimum value
-  minIndex = i
-  
-  // Scan the rest of the array to find the true minimum
-  for j = i + 1 to array.length - 1
-    if array[j] < array[minIndex]
-      minIndex = j // Found a new minimum
-      
-  // If we found a smaller element, swap it into its final place
-  if minIndex != i
-    swap(array[i], array[minIndex])`
+    pseudocode: `for (let i = 0; i < N - 1; i++) {
+  let minIndex = i;
+  for (let j = i + 1; j < N; j++) {
+    if (arr[j] < arr[minIndex]) {
+      minIndex = j;
+    }
+  }
+  if (minIndex !== i) {
+    swap(arr[i], arr[minIndex]);
+  }
+}`
   },
   insertionSort: {
     id: 'insertionSort',
@@ -85,18 +83,15 @@ for i = 0 to array.length - 1
       space: 'O(1)'
     },
     generator: generateInsertionSortSnapshots,
-    pseudocode: `// Start from the second element (the first is trivially sorted)
-for i = 1 to array.length - 1
-  key = array[i] // The card we want to insert
-  j = i - 1
-  
-  // Shift all elements in the sorted portion that are larger than the key
-  while j >= 0 and array[j] > key
-    array[j + 1] = array[j] // Shift right
-    j = j - 1
-    
-  // Insert the key into its correct sorted position
-  array[j + 1] = key`
+    pseudocode: `for (let i = 1; i < N; i++) {
+  let key = arr[i];
+  let j = i - 1;
+  while (j >= 0 && arr[j] > key) {
+    arr[j + 1] = arr[j];
+    j--;
+  }
+  arr[j + 1] = key;
+}`
   },
   shellSort: {
     id: 'shellSort',
@@ -110,20 +105,17 @@ for i = 1 to array.length - 1
       space: 'O(1)'
     },
     generator: generateShellSortSnapshots,
-    pseudocode: `// Start with a large gap, then reduce it
-for gap = array.length / 2 down to 1
-  // Perform a gapped insertion sort
-  for i = gap to array.length - 1
-    temp = array[i]
-    j = i
-    
-    // Shift earlier gap-sorted elements up until the correct location is found
-    while j >= gap and array[j - gap] > temp
-      array[j] = array[j - gap]
-      j = j - gap
-      
-    // Put temp in its correct location
-    array[j] = temp`
+    pseudocode: `for (let gap = floor(N / 2); gap > 0; gap = floor(gap / 2)) {
+  for (let i = gap; i < N; i++) {
+    let temp = arr[i];
+    let j = i;
+    while (j >= gap && arr[j - gap] > temp) {
+      arr[j] = arr[j - gap];
+      j -= gap;
+    }
+    arr[j] = temp;
+  }
+}`
   },
   mergeSort: {
     id: 'mergeSort',
@@ -137,19 +129,25 @@ for gap = array.length / 2 down to 1
       space: 'O(n)'
     },
     generator: generateMergeSortSnapshots,
-    pseudocode: `// 1. DIVIDE: Break array down into arrays of size 1
-split each element into partitions of size 1
+    pseudocode: `function mergeSort(arr, left, right) {
+  if (left >= right) return;
+  let mid = floor((left + right) / 2);
+  mergeSort(arr, left, mid);
+  mergeSort(arr, mid + 1, right);
+  merge(arr, left, mid, right);
+}
 
-// 2. CONQUER: Repeatedly merge adjacent partitions
-recursively merge adjacent partitions
-  // Look at the first element of both left and right partitions
-  for i = leftPartIdx to rightPartIdx
-    // Take the smaller element and put it into the new sorted array
-    if leftPartHeadValue <= rightPartHeadValue
-      copy leftPartHeadValue
-    else: 
-      copy rightPartHeadValue
-      Increase InvIdx`
+function merge(arr, left, mid, right) {
+  let temp = [];
+  let i = left, j = mid + 1;
+  while (i <= mid && j <= right) {
+    if (arr[i] <= arr[j]) temp.push(arr[i++]);
+    else temp.push(arr[j++]);
+  }
+  while (i <= mid) temp.push(arr[i++]);
+  while (j <= right) temp.push(arr[j++]);
+  copy(temp, arr, left, right);
+}`
   },
   quickSort: {
     id: 'quickSort',
@@ -163,22 +161,25 @@ recursively merge adjacent partitions
       space: 'O(log n)'
     },
     generator: generateQuickSortSnapshots,
-    pseudocode: `// 1. CHOOSE PIVOT (usually the last element)
-pivot = array[high]
-i = low - 1
+    pseudocode: `function quickSort(arr, low, high) {
+  if (low >= high) return;
+  let pivotIndex = partition(arr, low, high);
+  quickSort(arr, low, pivotIndex - 1);
+  quickSort(arr, pivotIndex + 1, high);
+}
 
-// 2. PARTITION ARRAY
-for j = low to high - 1
-  // If current element is smaller than pivot
-  if array[j] < pivot
-    i++
-    swap(array[i], array[j]) // Move smaller elements to the left
-    
-swap(array[i + 1], array[high]) // Place pivot in its correct sorted position
-
-// 3. RECURSE on the left and right sub-arrays
-quickSort(array, low, pivotIndex - 1)
-quickSort(array, pivotIndex + 1, high)`
+function partition(arr, low, high) {
+  let pivot = arr[high];
+  let i = low - 1;
+  for (let j = low; j < high; j++) {
+    if (arr[j] < pivot) {
+      i++;
+      swap(arr[i], arr[j]);
+    }
+  }
+  swap(arr[i + 1], arr[high]);
+  return i + 1;
+}`
   },
   heapSort: {
     id: 'heapSort',
@@ -192,17 +193,25 @@ quickSort(array, pivotIndex + 1, high)`
       space: 'O(1)'
     },
     generator: generateHeapSortSnapshots,
-    pseudocode: `// 1. BUILD MAX HEAP
-for i = Math.floor(n / 2) - 1 down to 0
-  heapify(array, n, i)
+    pseudocode: `for (let i = floor(N / 2) - 1; i >= 0; i--) {
+  heapify(arr, N, i);
+}
+for (let i = N - 1; i > 0; i--) {
+  swap(arr[0], arr[i]);
+  heapify(arr, i, 0);
+}
 
-// 2. EXTRACT ELEMENTS
-for i = n - 1 down to 1
-  // Move current root (maximum) to the end
-  swap(array[0], array[i])
-  
-  // Call max heapify on the reduced heap
-  heapify(array, i, 0)`
+function heapify(arr, size, rootIndex) {
+  let largest = rootIndex;
+  let left = 2 * rootIndex + 1;
+  let right = 2 * rootIndex + 2;
+  if (left < size && arr[left] > arr[largest]) largest = left;
+  if (right < size && arr[right] > arr[largest]) largest = right;
+  if (largest !== rootIndex) {
+    swap(arr[rootIndex], arr[largest]);
+    heapify(arr, size, largest);
+  }
+}`
   },
   radixSort: {
     id: 'radixSort',
@@ -216,25 +225,24 @@ for i = n - 1 down to 1
       space: 'O(n + k)'
     },
     generator: generateRadixSortSnapshots,
-    pseudocode: `// Find the maximum number to know number of digits
-max = getMax(array)
-
-// Do counting sort for every digit. exp is 10^i where i is current digit number
-for exp = 1 to max/exp > 0
-  // Initialize count array and output array
-  count = array of size 10 filled with 0s
-  
-  // Count occurrences of each digit
-  for i = 0 to n - 1
-    digit = (array[i] / exp) % 10
-    count[digit]++
-    
-  // Place elements in buckets
-  for i = n - 1 down to 0
-    output[count[digit] - 1] = array[i]
-    
-  // Copy back to original array
-  copy output to array`
+    pseudocode: `let max = getMax(arr);
+for (let exp = 1; floor(max / exp) > 0; exp *= 10) {
+  let output = new Array(N);
+  let count = new Array(10).fill(0);
+  for (let i = 0; i < N; i++) {
+    let digit = floor(arr[i] / exp) % 10;
+    count[digit]++;
+  }
+  for (let i = 1; i < 10; i++) {
+    count[i] += count[i - 1];
+  }
+  for (let i = N - 1; i >= 0; i--) {
+    let digit = floor(arr[i] / exp) % 10;
+    output[count[digit] - 1] = arr[i];
+    count[digit]--;
+  }
+  for (let i = 0; i < N; i++) arr[i] = output[i];
+}`
   },
   bfs: {
     id: 'bfs',
@@ -248,24 +256,19 @@ for exp = 1 to max/exp > 0
       space: 'O(V)'
     },
     generator: generateBFSSnapshots,
-    pseudocode: `// 1. Initialize a Queue with the Start Node
-queue.enqueue(startNode)
-startNode.isVisited = true
-
-// 2. Explore while queue is not empty
-while !queue.isEmpty()
-  currentNode = queue.dequeue()
-  
-  // 3. Check if we reached the target
-  if currentNode == endNode
-    return backtrackPath(currentNode)
-    
-  // 4. Explore all valid, unvisited neighbors
-  for neighbor in getNeighbors(currentNode)
-    if !neighbor.isVisited and !neighbor.isWall
-      neighbor.isVisited = true
-      neighbor.previousNode = currentNode
-      queue.enqueue(neighbor)`
+    pseudocode: `queue.enqueue(startNode);
+startNode.isVisited = true;
+while (!queue.isEmpty()) {
+  let currentNode = queue.dequeue();
+  if (currentNode === endNode) return backtrackPath(currentNode);
+  for (let neighbor of getNeighbors(currentNode)) {
+    if (!neighbor.isVisited && !neighbor.isWall) {
+      neighbor.isVisited = true;
+      neighbor.previousNode = currentNode;
+      queue.enqueue(neighbor);
+    }
+  }
+}`
   },
   dijkstra: {
     id: 'dijkstra',
@@ -279,26 +282,21 @@ while !queue.isEmpty()
       space: 'O(V)'
     },
     generator: generateDijkstraSnapshots,
-    pseudocode: `// 1. Set all distances to infinity, start node to 0
-for each node in grid
-  node.distance = infinity
-startNode.distance = 0
-
-// 2. Explore unvisited nodes
-while unvisited nodes remain
-  // Sort to find the closest node (Priority Queue)
-  currentNode = node with lowest distance
-  
-  if currentNode == endNode
-    return backtrackPath(currentNode)
-    
-  // 3. Update distances to neighbors
-  for neighbor in getNeighbors(currentNode)
-    if !neighbor.isWall and !neighbor.isVisited
-      newDistance = currentNode.distance + neighbor.weight // 1 for empty, 5 for mud
-      if newDistance < neighbor.distance
-        neighbor.distance = newDistance
-        neighbor.previousNode = currentNode`
+    pseudocode: `for (let node of grid) node.distance = Infinity;
+startNode.distance = 0;
+while (unvisitedNodes.length > 0) {
+  let currentNode = getClosestNode(unvisitedNodes);
+  if (currentNode === endNode) return backtrackPath(currentNode);
+  for (let neighbor of getNeighbors(currentNode)) {
+    if (!neighbor.isWall && !neighbor.isVisited) {
+      let newDist = currentNode.distance + neighbor.weight;
+      if (newDist < neighbor.distance) {
+        neighbor.distance = newDist;
+        neighbor.previousNode = currentNode;
+      }
+    }
+  }
+}`
   },
   astar: {
     id: 'astar',
@@ -312,26 +310,23 @@ while unvisited nodes remain
       space: 'O(V)'
     },
     generator: generateAStarSnapshots,
-    pseudocode: `// 1. Initialize g (distance) and f (g + heuristic)
-startNode.g = 0
-startNode.f = heuristic(startNode, endNode)
-
-while unvisited nodes remain
-  // Pick node with lowest f-score
-  currentNode = node with lowest f
-  
-  if currentNode == endNode
-    return backtrackPath(currentNode)
-    
-  for neighbor in getNeighbors(currentNode)
-    if !neighbor.isWall and !neighbor.isVisited
-      // tentative_g is the distance from start to neighbor
-      tentative_g = currentNode.g + neighbor.weight
-      
-      if tentative_g < neighbor.g
-        neighbor.g = tentative_g
-        neighbor.f = neighbor.g + heuristic(neighbor, endNode)
-        neighbor.previousNode = currentNode`
+    pseudocode: `for (let node of grid) { node.g = Infinity; node.f = Infinity; }
+startNode.g = 0;
+startNode.f = heuristic(startNode, endNode);
+while (openSet.length > 0) {
+  let currentNode = getLowestFNode(openSet);
+  if (currentNode === endNode) return backtrackPath(currentNode);
+  for (let neighbor of getNeighbors(currentNode)) {
+    if (neighbor.isWall || neighbor.isClosed) continue;
+    let tempG = currentNode.g + neighbor.weight;
+    if (tempG < neighbor.g) {
+      neighbor.previousNode = currentNode;
+      neighbor.g = tempG;
+      neighbor.f = tempG + heuristic(neighbor, endNode);
+      if (!openSet.includes(neighbor)) openSet.push(neighbor);
+    }
+  }
+}`
   },
   dfs: {
     id: 'dfs',
@@ -345,24 +340,20 @@ while unvisited nodes remain
       space: 'O(V)'
     },
     generator: generateDFSSnapshots,
-    pseudocode: `// 1. Initialize a Stack with the Start Node
-stack.push(startNode)
-
-// 2. Explore while stack is not empty
-while !stack.isEmpty()
-  currentNode = stack.pop()
-  
-  if !currentNode.isVisited
-    currentNode.isVisited = true
-    
-    if currentNode == endNode
-      return backtrackPath(currentNode) // Does NOT guarantee shortest path
-      
-    // 3. Push unvisited neighbors onto the stack
-    for neighbor in getNeighbors(currentNode)
-      if !neighbor.isVisited and !neighbor.isWall
-        neighbor.previousNode = currentNode
-        stack.push(neighbor)`
+    pseudocode: `stack.push(startNode);
+while (!stack.isEmpty()) {
+  let currentNode = stack.pop();
+  if (!currentNode.isVisited) {
+    currentNode.isVisited = true;
+    if (currentNode === endNode) return backtrackPath(currentNode);
+    for (let neighbor of getNeighbors(currentNode)) {
+      if (!neighbor.isVisited && !neighbor.isWall) {
+        neighbor.previousNode = currentNode;
+        stack.push(neighbor);
+      }
+    }
+  }
+}`
   },
   greedyBFS: {
     id: 'greedyBFS',
@@ -376,21 +367,19 @@ while !stack.isEmpty()
       space: 'O(V)'
     },
     generator: generateGreedyBFSSnapshots,
-    pseudocode: `// 1. Initialize h (heuristic)
-startNode.h = heuristic(startNode, endNode)
-
-while unvisited nodes remain
-  // Pick node that looks closest to the target
-  currentNode = node with lowest h
-  
-  if currentNode == endNode
-    return backtrackPath(currentNode) // Does NOT guarantee shortest path
-    
-  for neighbor in getNeighbors(currentNode)
-    if !neighbor.isWall and !neighbor.isVisited
-      if neighbor.h is infinity
-        neighbor.h = heuristic(neighbor, endNode)
-        neighbor.previousNode = currentNode`
+    pseudocode: `startNode.h = heuristic(startNode, endNode);
+while (unvisitedNodes.length > 0) {
+  let currentNode = getLowestHNode(unvisitedNodes);
+  if (currentNode === endNode) return backtrackPath(currentNode);
+  for (let neighbor of getNeighbors(currentNode)) {
+    if (!neighbor.isWall && !neighbor.isVisited) {
+      if (neighbor.h === Infinity) {
+        neighbor.h = heuristic(neighbor, endNode);
+        neighbor.previousNode = currentNode;
+      }
+    }
+  }
+}`
   },
   bfsGraph: {
     id: 'bfsGraph',
@@ -399,7 +388,18 @@ while unvisited nodes remain
     description: 'Explores an abstract graph equally in all directions, radiating outwards from the start node.',
     complexity: { best: 'O(1)', avg: 'O(V + E)', worst: 'O(V + E)', space: 'O(V)' },
     generator: generateBFSGraphSnapshots,
-    pseudocode: `// 1. Initialize a Queue with the Start Node\nqueue.enqueue(startNode)\nstartNode.isVisited = true\n\n// 2. Explore while queue is not empty\nwhile !queue.isEmpty()\n  currentNode = queue.dequeue()\n  \n  // 3. Explore all connected edges\n  for edge of getConnectedEdges(currentNode)\n    neighbor = edge.target\n    if !neighbor.isVisited\n      neighbor.isVisited = true\n      queue.enqueue(neighbor)`
+    pseudocode: `queue.enqueue(startNode);
+startNode.isVisited = true;
+while (!queue.isEmpty()) {
+  let currentNode = queue.dequeue();
+  for (let edge of getConnectedEdges(currentNode)) {
+    let neighbor = edge.target;
+    if (!neighbor.isVisited) {
+      neighbor.isVisited = true;
+      queue.enqueue(neighbor);
+    }
+  }
+}`
   },
   dfsGraph: {
     id: 'dfsGraph',
@@ -408,7 +408,16 @@ while unvisited nodes remain
     description: 'Plunges deep into a graph along a single path until it hits a dead end, then backtracks.',
     complexity: { best: 'O(1)', avg: 'O(V + E)', worst: 'O(V + E)', space: 'O(V)' },
     generator: generateDFSGraphSnapshots,
-    pseudocode: `// 1. Initialize a Stack with Start Node\nstack.push(startNode)\n\n// 2. Explore while stack is not empty\nwhile !stack.isEmpty()\n  currentNode = stack.pop()\n  if !currentNode.isVisited\n    currentNode.isVisited = true\n    // 3. Push unvisited neighbors\n    for neighbor of getNeighbors(currentNode)\n      if !neighbor.isVisited\n        stack.push(neighbor)`
+    pseudocode: `stack.push(startNode);
+while (!stack.isEmpty()) {
+  let currentNode = stack.pop();
+  if (!currentNode.isVisited) {
+    currentNode.isVisited = true;
+    for (let neighbor of getNeighbors(currentNode)) {
+      if (!neighbor.isVisited) stack.push(neighbor);
+    }
+  }
+}`
   },
   kruskals: {
     id: 'kruskals',
@@ -417,7 +426,13 @@ while unvisited nodes remain
     description: 'Finds a Minimum Spanning Tree by globally sorting all edges from cheapest to most expensive, adding them one by one as long as they don\'t create a loop.',
     complexity: { best: 'O(E log E)', avg: 'O(E log E)', worst: 'O(E log E)', space: 'O(V)' },
     generator: generateKruskalsSnapshots,
-    pseudocode: `// 1. Sort all edges by weight\nsortedEdges = edges.sortBy(weight)\n\n// 2. Iterate through sorted edges\nfor edge of sortedEdges\n  // 3. Check if it creates a cycle (Union-Find)\n  if !createsCycle(edge.source, edge.target)\n    add to MST\n    union(edge.source, edge.target)`
+    pseudocode: `let sortedEdges = edges.sort((a, b) => a.weight - b.weight);
+for (let edge of sortedEdges) {
+  if (!createsCycle(edge.source, edge.target)) {
+    addToMST(edge);
+    union(edge.source, edge.target);
+  }
+}`
   },
   prims: {
     id: 'prims',
@@ -426,7 +441,13 @@ while unvisited nodes remain
     description: 'Finds a Minimum Spanning Tree by starting at a single node and growing the tree outward, always picking the cheapest edge that connects the tree to a new node.',
     complexity: { best: 'O(E log V)', avg: 'O(E log V)', worst: 'O(E log V)', space: 'O(V)' },
     generator: generatePrimsSnapshots,
-    pseudocode: `// 1. Start with a single node\nvisited.add(startNode)\n\n// 2. Loop until all nodes visited\nwhile (visited.size < nodes.length)\n  // 3. Find cheapest edge leaving the visited set\n  cheapestEdge = getCheapestOutwardEdge(visited)\n  visited.add(cheapestEdge.target)\n  addToMST(cheapestEdge)`
+    pseudocode: `visited.add(startNode);
+while (visited.size < nodes.length) {
+  let cheapestEdge = getCheapestOutwardEdge(visited);
+  if (!cheapestEdge) break;
+  visited.add(cheapestEdge.target);
+  addToMST(cheapestEdge);
+}`
   },
   dijkstraGraph: {
     id: 'dijkstraGraph',
@@ -435,7 +456,17 @@ while unvisited nodes remain
     description: 'Calculates the shortest path from the start node to all other reachable nodes. Cannot handle negative edge weights.',
     complexity: { best: 'O(1)', avg: 'O(E log V)', worst: 'O(E log V)', space: 'O(V)' },
     generator: generateDijkstraGraphSnapshots,
-    pseudocode: `// 1. Initialize distances to infinity\ndistances = { node: infinity... }\ndistances[startNode] = 0\n\n// 2. Explore unvisited nodes\nwhile unvisited nodes remain\n  currentNode = node with lowest distance\n  \n  // 3. Update distances to neighbors\n  for edge of getNeighbors(currentNode)\n    newDistance = distances[currentNode] + edge.weight\n    if newDistance < distances[edge.target]\n      distances[edge.target] = newDistance`
+    pseudocode: `for (let node of nodes) distances[node] = Infinity;
+distances[startNode] = 0;
+while (unvisitedNodes.length > 0) {
+  let currentNode = getLowestDistanceNode(unvisitedNodes);
+  for (let edge of getNeighbors(currentNode)) {
+    let newDist = distances[currentNode] + edge.weight;
+    if (newDist < distances[edge.target]) {
+      distances[edge.target] = newDist;
+    }
+  }
+}`
   },
   bellmanFord: {
     id: 'bellmanFord',
@@ -444,7 +475,20 @@ while unvisited nodes remain
     description: 'Calculates shortest paths like Dijkstra, but can handle negative edge weights by relaxing all edges |V| - 1 times.',
     complexity: { best: 'O(E)', avg: 'O(V * E)', worst: 'O(V * E)', space: 'O(V)' },
     generator: generateBellmanFordSnapshots,
-    pseudocode: `// 1. Initialize distances to infinity\ndistances = { node: infinity... }\ndistances[startNode] = 0\n\n// 2. Relax all edges |V| - 1 times\nfor i from 1 to |V| - 1\n  for edge of allEdges\n    if distances[edge.source] + edge.weight < distances[edge.target]\n      distances[edge.target] = distances[edge.source] + edge.weight\n\n// 3. Check for negative cycles\nfor edge of allEdges\n  if distances[edge.source] + edge.weight < distances[edge.target]\n    ERROR: Negative cycle detected!`
+    pseudocode: `for (let node of nodes) distances[node] = Infinity;
+distances[startNode] = 0;
+for (let i = 1; i < V; i++) {
+  for (let edge of allEdges) {
+    if (distances[edge.source] + edge.weight < distances[edge.target]) {
+      distances[edge.target] = distances[edge.source] + edge.weight;
+    }
+  }
+}
+for (let edge of allEdges) {
+  if (distances[edge.source] + edge.weight < distances[edge.target]) {
+    throw Error("Negative cycle detected!");
+  }
+}`
   },
   tarjans: {
     id: 'tarjans',
@@ -453,7 +497,21 @@ while unvisited nodes remain
     description: 'Finds Strongly Connected Components (clusters where every node can reach every other node) using a single DFS pass with low-link values.',
     complexity: { best: 'O(V + E)', avg: 'O(V + E)', worst: 'O(V + E)', space: 'O(V)' },
     generator: generateTarjansSnapshots,
-    pseudocode: `// 1. DFS traversal tracking IDs and Low-Links\ndef dfs(node):\n  node.id = node.low = id++\n  stack.push(node)\n  \n  // 2. Explore neighbors\n  for neighbor of node.neighbors\n    if neighbor not visited\n      dfs(neighbor)\n      node.low = min(node.low, neighbor.low)\n    else if neighbor on stack (back edge)\n      node.low = min(node.low, neighbor.id)\n      \n  // 3. Pop SCC if root found\n  if node.id == node.low\n    pop from stack until node is popped`
+    pseudocode: `function dfs(node) {
+  node.id = node.low = id++;
+  stack.push(node);
+  for (let neighbor of getNeighbors(node)) {
+    if (!neighbor.visited) {
+      dfs(neighbor);
+      node.low = Math.min(node.low, neighbor.low);
+    } else if (stack.includes(neighbor)) {
+      node.low = Math.min(node.low, neighbor.id);
+    }
+  }
+  if (node.id === node.low) {
+    popFromStackUntil(node);
+  }
+}`
   },
   nQueens: {
     id: 'nQueens',
@@ -462,7 +520,16 @@ while unvisited nodes remain
     description: 'Places N queens on an NxN chessboard so that no two queens threaten each other. Demonstrates classic backtracking by exploring paths and undoing bad placements.',
     complexity: { best: 'O(1)', avg: 'O(N!)', worst: 'O(N!)', space: 'O(N)' },
     generator: generateNQueensSnapshots,
-    pseudocode: `// 1. Try placing a queen in current column\nfor row from 0 to N-1\n  if isSafe(row, col)\n    board[row][col] = Queen\n    \n    // 2. Recursively solve for next column\n    if solve(col + 1) == true\n      return true\n      \n    // 3. Backtrack! (Undo choice)\n    board[row][col] = Empty\n\nreturn false`
+    pseudocode: `for (let row = 0; row < N; row++) {
+  if (isSafe(row, col)) {
+    board[row][col] = "Q";
+    if (solve(col + 1)) {
+      return true;
+    }
+    board[row][col] = ".";
+  }
+}
+return false;`
   },
   sudoku: {
     id: 'sudoku',
@@ -471,7 +538,15 @@ while unvisited nodes remain
     description: 'Solves a 9x9 Sudoku grid by trying digits 1-9 in empty cells. If a digit causes a conflict later, it backtracks and tries the next digit.',
     complexity: { best: 'O(1)', avg: 'O(9^(EmptyCells))', worst: 'O(9^(EmptyCells))', space: 'O(EmptyCells)' },
     generator: generateSudokuSnapshots,
-    pseudocode: `// 1. Find next empty cell\nif no empty cells\n  return true // Solved!\n\n// 2. Try digits 1 through 9\nfor num from 1 to 9\n  if isSafe(row, col, num)\n    board[row][col] = num\n    \n    if solve() == true\n      return true\n      \n    // 3. Backtrack!\n    board[row][col] = Empty\n\nreturn false`
+    pseudocode: `if (noEmptyCells) return true;
+for (let num = 1; num <= 9; num++) {
+  if (isSafe(row, col, num)) {
+    board[row][col] = num;
+    if (solve()) return true;
+    board[row][col] = Empty;
+  }
+}
+return false;`
   },
   graphColoring: {
     id: 'graphColoring',
@@ -480,6 +555,14 @@ while unvisited nodes remain
     description: 'Assigns up to m colors to graph nodes such that no two connected nodes share the same color. If it hits a dead end, it backtracks to try different color combinations.',
     complexity: { best: 'O(1)', avg: 'O(m^V)', worst: 'O(m^V)', space: 'O(V)' },
     generator: generateGraphColoringSnapshots,
-    pseudocode: `// 1. Base case: all nodes colored\nif nodeIndex == N\n  return true\n\n// 2. Try all possible m colors for current node\nfor color from 0 to m-1\n  if isSafe(node, color)\n    colorAssignment[node] = color\n    \n    if solve(nodeIndex + 1) == true\n      return true\n      \n    // 3. Backtrack!\n    remove colorAssignment[node]\n\nreturn false`
+    pseudocode: `if (nodeIndex === N) return true;
+for (let color = 0; color < m; color++) {
+  if (isSafe(node, color)) {
+    colors[node] = color;
+    if (solve(nodeIndex + 1)) return true;
+    colors[node] = null;
+  }
+}
+return false;`
   }
 };

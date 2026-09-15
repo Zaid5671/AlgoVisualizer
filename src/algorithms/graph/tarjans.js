@@ -5,18 +5,19 @@ export function generateTarjansSnapshots({ nodes, edges }) {
   const visitedNodes = new Set();
   const visitedEdges = [];
   
-  const record = (type, activeNodes = [], activeEdges = [], message) => {
+  const record = (type, activeNodes = [], activeEdges = [], message, activeLine) => {
     snapshots.push({
       type,
       visitedNodes: Array.from(visitedNodes),
       visitedEdges: [...visitedEdges],
       activeNodes,
       activeEdges,
-      message
+      message,
+      activeLine
     });
   };
 
-  record(StepTypes.START, [], [], "Starting Tarjan's Strongly Connected Components (SCC) Algorithm");
+  record(StepTypes.START, [], [], "Starting Tarjan's Strongly Connected Components (SCC) Algorithm", 0);
 
   let idCounter = 0;
   const ids = {};
@@ -38,7 +39,7 @@ export function generateTarjansSnapshots({ nodes, edges }) {
     ids[at] = low[at] = idCounter++;
     visitedNodes.add(at);
 
-    record(StepTypes.COMPARE, [at], [], `Visiting node ${at}. Assigned ID and Low-Link: ${ids[at]}`);
+    record(StepTypes.COMPARE, [at], [], `Visiting node ${at}. Assigned ID and Low-Link: ${ids[at]}`, 1);
 
     // Visit all neighbors (directed edges only)
     const outEdges = edges.filter(e => e.source === at);
@@ -47,21 +48,21 @@ export function generateTarjansSnapshots({ nodes, edges }) {
       const to = edge.target;
       visitedEdges.push(edge.id);
       
-      record(StepTypes.COMPARE, [at, to], [edge.id], `Traversing directed edge to ${to}`);
+      record(StepTypes.COMPARE, [at, to], [edge.id], `Traversing directed edge to ${to}`, 3);
 
       if (ids[to] === -1) {
         dfs(to);
         low[at] = Math.min(low[at], low[to]);
-        record(StepTypes.SWAP, [at], [edge.id], `Backtracking to ${at}. Updated Low-Link to ${low[at]}`);
+        record(StepTypes.SWAP, [at], [edge.id], `Backtracking to ${at}. Updated Low-Link to ${low[at]}`, 6);
       } else if (onStack[to]) {
         low[at] = Math.min(low[at], ids[to]);
-        record(StepTypes.SWAP, [at], [edge.id], `Node ${to} is on stack! Cycle found. Updated Low-Link of ${at} to ${low[at]}`);
+        record(StepTypes.SWAP, [at], [edge.id], `Node ${to} is on stack! Cycle found. Updated Low-Link of ${at} to ${low[at]}`, 8);
       }
     }
 
     // After visiting all neighbors, if we're the root of an SCC
     if (ids[at] === low[at]) {
-      record(StepTypes.COMPARE, [at], [], `Node ${at} is the root of an SCC (ID == Low-Link). Popping stack!`);
+      record(StepTypes.COMPARE, [at], [], `Node ${at} is the root of an SCC (ID == Low-Link). Popping stack!`, 11);
       let sccNodes = [];
       while (true) {
         const node = stack.pop();
@@ -70,7 +71,7 @@ export function generateTarjansSnapshots({ nodes, edges }) {
         if (node === at) break;
       }
       sccCount++;
-      record(StepTypes.SWAP, sccNodes, [], `Found Strongly Connected Component #${sccCount}: [${sccNodes.join(', ')}]`);
+      record(StepTypes.SWAP, sccNodes, [], `Found Strongly Connected Component #${sccCount}: [${sccNodes.join(', ')}]`, 12);
     }
   };
 
@@ -80,7 +81,7 @@ export function generateTarjansSnapshots({ nodes, edges }) {
     }
   }
 
-  record(StepTypes.END, [], [], `Tarjan's Complete! Found ${sccCount} Strongly Connected Components.`);
+  record(StepTypes.END, [], [], `Tarjan's Complete! Found ${sccCount} Strongly Connected Components.`, -1);
 
   return snapshots;
 }

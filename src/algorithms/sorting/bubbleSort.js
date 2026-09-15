@@ -7,24 +7,25 @@ export function generateBubbleSortSnapshots(initialArray) {
   const n = arr.length;
   
   // Helper to push a snapshot
-  const record = (type, indices, message) => {
+  const record = (type, indices, message, activeLine) => {
     snapshots.push({
       type,
       array: [...arr],
       activeIndices: indices, // e.g. [0, 1] for compare/swap
       settledIndices: [], // We will populate this below
-      message
+      message,
+      activeLine
     });
   };
 
-  record(StepTypes.START, [], "Starting Bubble Sort");
+  record(StepTypes.START, [], "Starting Bubble Sort", 0);
 
   let settledCount = 0;
   for (let i = 0; i < n; i++) {
     let swapped = false;
     for (let j = 0; j < n - i - 1; j++) {
       // COMPARE
-      record(StepTypes.COMPARE, [j, j + 1], `Comparing ${arr[j]} and ${arr[j + 1]}`);
+      record(StepTypes.COMPARE, [j, j + 1], `Comparing ${arr[j]} and ${arr[j + 1]}`, 3);
 
       if (arr[j] > arr[j + 1]) {
         // SWAP
@@ -32,7 +33,7 @@ export function generateBubbleSortSnapshots(initialArray) {
         arr[j] = arr[j + 1];
         arr[j + 1] = temp;
         swapped = true;
-        record(StepTypes.SWAP, [j, j + 1], `Swapped ${arr[j+1]} and ${arr[j]}`);
+        record(StepTypes.SWAP, [j, j + 1], `Swapped ${arr[j+1]} and ${arr[j]}`, 4);
       }
     }
     settledCount++;
@@ -46,7 +47,8 @@ export function generateBubbleSortSnapshots(initialArray) {
       array: [...arr],
       activeIndices: [],
       settledIndices,
-      message: `${arr[n - i - 1]} is in its final position`
+      message: `${arr[n - i - 1]} is in its final position`,
+      activeLine: 7 // End of inner loop
     });
 
     if (!swapped) {
@@ -55,7 +57,8 @@ export function generateBubbleSortSnapshots(initialArray) {
         array: [...arr],
         activeIndices: [],
         settledIndices: Array.from({length: n}, (_, idx) => idx), // all settled
-        message: "Array is fully sorted!"
+        message: "Array is fully sorted!",
+        activeLine: 8
       });
       break;
     }
@@ -69,7 +72,8 @@ export function generateBubbleSortSnapshots(initialArray) {
         array: [...arr],
         activeIndices: [],
         settledIndices: Array.from({length: n}, (_, idx) => idx), // all settled
-        message: "Array is fully sorted!"
+        message: "Array is fully sorted!",
+        activeLine: 9
       });
   }
 

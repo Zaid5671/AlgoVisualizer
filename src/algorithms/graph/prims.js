@@ -5,18 +5,19 @@ export function generatePrimsSnapshots({ nodes, edges, startNodeId }) {
   const visitedNodes = new Set();
   const visitedEdges = [];
   
-  const record = (type, activeNodes = [], activeEdges = [], message) => {
+  const record = (type, activeNodes = [], activeEdges = [], message, activeLine) => {
     snapshots.push({
       type,
       visitedNodes: Array.from(visitedNodes),
       visitedEdges: [...visitedEdges],
       activeNodes,
       activeEdges,
-      message
+      message,
+      activeLine
     });
   };
 
-  record(StepTypes.START, [startNodeId], [], "Starting Prim's Minimum Spanning Tree (MST)");
+  record(StepTypes.START, [startNodeId], [], "Starting Prim's Minimum Spanning Tree (MST)", 0);
 
   visitedNodes.add(startNodeId);
   let totalCost = 0;
@@ -51,16 +52,16 @@ export function generatePrimsSnapshots({ nodes, edges, startNodeId }) {
     cheapestEdge = candidateEdges[0];
     newNeighbor = visitedNodes.has(cheapestEdge.source) ? cheapestEdge.target : cheapestEdge.source;
 
-    record(StepTypes.COMPARE, [newNeighbor], [cheapestEdge.id], `Evaluating cheapest outward edge (Weight: ${cheapestEdge.weight})`);
+    record(StepTypes.COMPARE, [newNeighbor], [cheapestEdge.id], `Evaluating cheapest outward edge (Weight: ${cheapestEdge.weight})`, 2);
 
     visitedNodes.add(newNeighbor);
     visitedEdges.push(cheapestEdge.id);
     totalCost += cheapestEdge.weight;
 
-    record(StepTypes.SWAP, [newNeighbor], [cheapestEdge.id], `Added node ${newNeighbor} to the growing tree!`);
+    record(StepTypes.SWAP, [newNeighbor], [cheapestEdge.id], `Added node ${newNeighbor} to the growing tree!`, 5);
   }
 
-  record(StepTypes.END, [], [], `Prim's MST Complete! Total cost: ${totalCost}`);
+  record(StepTypes.END, [], [], `Prim's MST Complete! Total cost: ${totalCost}`, -1);
 
   return snapshots;
 }

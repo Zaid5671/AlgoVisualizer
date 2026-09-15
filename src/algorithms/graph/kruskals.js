@@ -24,18 +24,19 @@ export function generateKruskalsSnapshots({ nodes, edges }) {
   const visitedNodes = new Set();
   const visitedEdges = [];
   
-  const record = (type, activeNodes = [], activeEdges = [], message) => {
+  const record = (type, activeNodes = [], activeEdges = [], message, activeLine) => {
     snapshots.push({
       type,
       visitedNodes: Array.from(visitedNodes),
       visitedEdges: [...visitedEdges],
       activeNodes,
       activeEdges,
-      message
+      message,
+      activeLine
     });
   };
 
-  record(StepTypes.START, [], [], "Starting Kruskal's Minimum Spanning Tree (MST)");
+  record(StepTypes.START, [], [], "Starting Kruskal's Minimum Spanning Tree (MST)", 0);
 
   // 1. Sort all edges by weight
   const sortedEdges = [...edges].sort((a, b) => a.weight - b.weight);
@@ -44,7 +45,7 @@ export function generateKruskalsSnapshots({ nodes, edges }) {
   let totalCost = 0;
 
   for (const edge of sortedEdges) {
-    record(StepTypes.COMPARE, [edge.source, edge.target], [edge.id], `Examining cheapest available edge (Weight: ${edge.weight})`);
+    record(StepTypes.COMPARE, [edge.source, edge.target], [edge.id], `Examining cheapest available edge (Weight: ${edge.weight})`, 2);
 
     const root1 = uf.find(edge.source);
     const root2 = uf.find(edge.target);
@@ -56,13 +57,13 @@ export function generateKruskalsSnapshots({ nodes, edges }) {
       visitedEdges.push(edge.id);
       totalCost += edge.weight;
       
-      record(StepTypes.SWAP, [edge.source, edge.target], [edge.id], `No cycle detected! Adding edge to MST.`);
+      record(StepTypes.SWAP, [edge.source, edge.target], [edge.id], `No cycle detected! Adding edge to MST.`, 3);
     } else {
-      record(StepTypes.COMPARE, [edge.source, edge.target], [edge.id], `Cycle detected! Ignoring this edge.`);
+      record(StepTypes.COMPARE, [edge.source, edge.target], [edge.id], `Cycle detected! Ignoring this edge.`, 2);
     }
   }
 
-  record(StepTypes.END, [], [], `Kruskal's MST Complete! Total cost: ${totalCost}`);
+  record(StepTypes.END, [], [], `Kruskal's MST Complete! Total cost: ${totalCost}`, -1);
 
   return snapshots;
 }

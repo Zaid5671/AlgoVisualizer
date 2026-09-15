@@ -36,11 +36,11 @@ export function generateAStarSnapshots({ grid, startNode, endNode }) {
   start.g = 0;
   start.f = manhattanDistance(start, end);
 
-  const record = (type, currentNodes, message, isEnd = false) => {
-    snapshots.push({ type, visitedNodes: [...visitedNodes], currentNodes, pathNodes: isEnd ? [...pathNodes] : [], message });
+  const record = (type, currentNodes, message, isEnd = false, activeLine) => {
+    snapshots.push({ type, visitedNodes: [...visitedNodes], currentNodes, pathNodes: isEnd ? [...pathNodes] : [], message, activeLine });
   };
 
-  record(StepTypes.START, [start], "Starting A* Search (Heuristic: Manhattan Distance)");
+  record(StepTypes.START, [start], "Starting A* Search (Heuristic: Manhattan Distance)", false, 0);
 
   const unvisitedNodes = [];
   for (const row of logicalGrid) {
@@ -62,10 +62,11 @@ export function generateAStarSnapshots({ grid, startNode, endNode }) {
     closestNode.isVisited = true;
     visitedNodes.push({ row: closestNode.row, col: closestNode.col });
 
-    record(StepTypes.COMPARE, [{ row: closestNode.row, col: closestNode.col }], `Exploring node with lowest f-score: ${closestNode.f} (Distance: ${closestNode.g}, Heuristic: ${closestNode.f - closestNode.g})`);
+    record(StepTypes.COMPARE, [{ row: closestNode.row, col: closestNode.col }], `Exploring node with lowest f-score: ${closestNode.f} (Distance: ${closestNode.g}, Heuristic: ${closestNode.f - closestNode.g})`, false, 4);
 
     if (closestNode.row === end.row && closestNode.col === end.col) {
       found = true;
+      record(StepTypes.COMPARE, [{ row: closestNode.row, col: closestNode.col }], `Target found!`, false, 5);
       break;
     }
 
@@ -88,9 +89,9 @@ export function generateAStarSnapshots({ grid, startNode, endNode }) {
       pathNodes.unshift({ row: curr.row, col: curr.col });
       curr = curr.previousNode;
     }
-    record(StepTypes.END, [], `Target found! The shortest path is ${pathNodes.length - 1} steps.`, true);
+    record(StepTypes.END, [], `Target found! The shortest path is ${pathNodes.length - 1} steps.`, true, -1);
   } else {
-    record(StepTypes.END, [], "No path exists to the target.", true);
+    record(StepTypes.END, [], "No path exists to the target.", true, -1);
   }
 
   return snapshots;

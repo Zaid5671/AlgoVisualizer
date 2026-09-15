@@ -6,16 +6,17 @@ export function generateSudokuSnapshots({ initialBoard }) {
   // Deep copy the input board
   const board = initialBoard.map(row => [...row]);
   
-  const record = (type, activeCells = [], message) => {
+  const record = (type, activeCells = [], message, activeLine) => {
     snapshots.push({
       type,
       board: board.map(row => [...row]),
       activeCells, // array of {r, c} objects
-      message
+      message,
+      activeLine
     });
   };
 
-  record(StepTypes.START, [], "Starting Sudoku Solver");
+  record(StepTypes.START, [], "Starting Sudoku Solver", 0);
 
   const isSafe = (row, col, num) => {
     // Check row
@@ -56,26 +57,26 @@ export function generateSudokuSnapshots({ initialBoard }) {
     if (isEmpty) return true; // No empty space left
 
     for (let num = 1; num <= 9; num++) {
-      record(StepTypes.COMPARE, [{ r: row, c: col }], `Testing number ${num} at row ${row}, col ${col}`);
+      record(StepTypes.COMPARE, [{ r: row, c: col }], `Testing number ${num} at row ${row}, col ${col}`, 1);
 
       if (isSafe(row, col, num)) {
         board[row][col] = num;
-        record(StepTypes.SWAP, [{ r: row, c: col }], `Valid! Placed ${num} at row ${row}, col ${col}`);
+        record(StepTypes.SWAP, [{ r: row, c: col }], `Valid! Placed ${num} at row ${row}, col ${col}`, 3);
 
         if (solveSudokuUtil()) return true;
 
         // Backtrack
         board[row][col] = 0;
-        record(StepTypes.SWAP, [{ r: row, c: col }], `Dead end. Backtracking from row ${row}, col ${col}. Erased ${num}.`);
+        record(StepTypes.SWAP, [{ r: row, c: col }], `Dead end. Backtracking from row ${row}, col ${col}. Erased ${num}.`, 5);
       }
     }
     return false;
   };
 
   if (solveSudokuUtil()) {
-    record(StepTypes.END, [], "Sudoku Solved!");
+    record(StepTypes.END, [], "Sudoku Solved!", -1);
   } else {
-    record(StepTypes.END, [], "No solution exists for this Sudoku!");
+    record(StepTypes.END, [], "No solution exists for this Sudoku!", 8);
   }
 
   return snapshots;

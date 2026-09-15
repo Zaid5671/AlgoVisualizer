@@ -5,17 +5,18 @@ export function generateMergeSortSnapshots(initialArray) {
   let arr = [...initialArray];
   const n = arr.length;
   
-  const record = (type, indices, message) => {
+  const record = (type, indices, message, activeLine) => {
     snapshots.push({
       type,
       array: [...arr],
       activeIndices: indices,
       settledIndices: [],
-      message
+      message,
+      activeLine
     });
   };
 
-  record(StepTypes.START, [], "Starting Merge Sort");
+  record(StepTypes.START, [], "Starting Merge Sort", -1);
 
   function merge(left, mid, right) {
     let n1 = mid - left + 1;
@@ -30,14 +31,14 @@ export function generateMergeSortSnapshots(initialArray) {
     let i = 0, j = 0, k = left;
     
     while (i < n1 && j < n2) {
-      record(StepTypes.COMPARE, [left + i, mid + 1 + j], `Comparing ${L[i]} and ${R[j]}`);
+      record(StepTypes.COMPARE, [left + i, mid + 1 + j], `Comparing ${L[i]} and ${R[j]}`, 11);
       if (L[i] <= R[j]) {
         arr[k] = L[i];
-        record(StepTypes.SWAP, [k], `Placing ${L[i]} into sorted position`);
+        record(StepTypes.SWAP, [k], `Placing ${L[i]} into sorted position`, 12);
         i++;
       } else {
         arr[k] = R[j];
-        record(StepTypes.SWAP, [k], `Placing ${R[j]} into sorted position`);
+        record(StepTypes.SWAP, [k], `Placing ${R[j]} into sorted position`, 13);
         j++;
       }
       k++;
@@ -45,20 +46,23 @@ export function generateMergeSortSnapshots(initialArray) {
     
     while (i < n1) {
       arr[k] = L[i];
-      record(StepTypes.SWAP, [k], `Copying remaining element ${L[i]}`);
+      record(StepTypes.SWAP, [k], `Copying remaining element ${L[i]}`, 15);
       i++;
       k++;
     }
     
     while (j < n2) {
       arr[k] = R[j];
-      record(StepTypes.SWAP, [k], `Copying remaining element ${R[j]}`);
+      record(StepTypes.SWAP, [k], `Copying remaining element ${R[j]}`, 16);
       j++;
       k++;
     }
+    
+    record(StepTypes.SETTLED, [], `Merged partition`, 17);
   }
 
   function mergeSort(left, right) {
+    record(StepTypes.PIVOT, [left, right], `Dividing array from index ${left} to ${right}`, 0);
     if (left >= right) return;
     let mid = left + Math.floor((right - left) / 2);
     mergeSort(left, mid);
@@ -73,7 +77,8 @@ export function generateMergeSortSnapshots(initialArray) {
     array: [...arr],
     activeIndices: [],
     settledIndices: Array.from({length: n}, (_, idx) => idx),
-    message: "Array is fully sorted!"
+    message: "Array is fully sorted!",
+    activeLine: -1
   });
 
   return snapshots;

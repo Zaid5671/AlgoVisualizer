@@ -29,11 +29,11 @@ export function generateDijkstraSnapshots({ grid, startNode, endNode }) {
   
   start.distance = 0;
 
-  const record = (type, currentNodes, message, isEnd = false) => {
-    snapshots.push({ type, visitedNodes: [...visitedNodes], currentNodes, pathNodes: isEnd ? [...pathNodes] : [], message });
+  const record = (type, currentNodes, message, isEnd = false, activeLine) => {
+    snapshots.push({ type, visitedNodes: [...visitedNodes], currentNodes, pathNodes: isEnd ? [...pathNodes] : [], message, activeLine });
   };
 
-  record(StepTypes.START, [start], "Starting Dijkstra's Algorithm");
+  record(StepTypes.START, [start], "Starting Dijkstra's Algorithm", false, 0);
 
   // Keep a list of all nodes to act as our unvisited set
   const unvisitedNodes = [];
@@ -56,10 +56,11 @@ export function generateDijkstraSnapshots({ grid, startNode, endNode }) {
     closestNode.isVisited = true;
     visitedNodes.push({ row: closestNode.row, col: closestNode.col });
 
-    record(StepTypes.COMPARE, [{ row: closestNode.row, col: closestNode.col }], `Exploring node with shortest known distance: ${closestNode.distance}`);
+    record(StepTypes.COMPARE, [{ row: closestNode.row, col: closestNode.col }], `Exploring node with shortest known distance: ${closestNode.distance}`, false, 3);
 
     if (closestNode.row === end.row && closestNode.col === end.col) {
       found = true;
+      record(StepTypes.COMPARE, [{ row: closestNode.row, col: closestNode.col }], `Target found!`, false, 4);
       break;
     }
 
@@ -82,9 +83,9 @@ export function generateDijkstraSnapshots({ grid, startNode, endNode }) {
       pathNodes.unshift({ row: curr.row, col: curr.col });
       curr = curr.previousNode;
     }
-    record(StepTypes.END, [], `Target found! The shortest path is ${pathNodes.length - 1} steps.`, true);
+    record(StepTypes.END, [], `Target found! The shortest path is ${pathNodes.length - 1} steps.`, true, -1);
   } else {
-    record(StepTypes.END, [], "No path exists to the target.", true);
+    record(StepTypes.END, [], "No path exists to the target.", true, -1);
   }
 
   return snapshots;

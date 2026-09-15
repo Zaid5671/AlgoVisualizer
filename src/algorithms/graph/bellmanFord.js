@@ -5,18 +5,19 @@ export function generateBellmanFordSnapshots({ nodes, edges, startNodeId }) {
   const visitedNodes = new Set();
   let activeEdgesToRender = []; // Used to show the final shortest path tree
   
-  const record = (type, activeNodes = [], activeEdges = [], message) => {
+  const record = (type, activeNodes = [], activeEdges = [], message, activeLine) => {
     snapshots.push({
       type,
       visitedNodes: Array.from(visitedNodes),
       visitedEdges: [...activeEdgesToRender],
       activeNodes,
       activeEdges,
-      message
+      message,
+      activeLine
     });
   };
 
-  record(StepTypes.START, [startNodeId], [], "Starting Bellman-Ford Algorithm");
+  record(StepTypes.START, [startNodeId], [], "Starting Bellman-Ford Algorithm", 0);
 
   const distances = {};
   const previousEdge = {};
@@ -32,31 +33,31 @@ export function generateBellmanFordSnapshots({ nodes, edges, startNodeId }) {
     // We treat undirected edges as two directed edges for Bellman-Ford
     for (const edge of edges) {
       // Forward direction
-      record(StepTypes.COMPARE, [edge.source, edge.target], [edge.id], `Pass ${i}: Relaxing edge from ${edge.source} to ${edge.target} (Weight ${edge.weight})`);
+      record(StepTypes.COMPARE, [edge.source, edge.target], [edge.id], `Pass ${i}: Relaxing edge from ${edge.source} to ${edge.target} (Weight ${edge.weight})`, 4);
       
       if (distances[edge.source] !== Infinity && distances[edge.source] + edge.weight < distances[edge.target]) {
         distances[edge.target] = distances[edge.source] + edge.weight;
         previousEdge[edge.target] = edge.id;
         visitedNodes.add(edge.target);
         anyChanges = true;
-        record(StepTypes.SWAP, [edge.target], [edge.id], `Updated distance to node ${edge.target} (New Cost: ${distances[edge.target]})`);
+        record(StepTypes.SWAP, [edge.target], [edge.id], `Updated distance to node ${edge.target} (New Cost: ${distances[edge.target]})`, 5);
       }
 
       // Backward direction (if undirected)
       if (!edge.isDirected) {
-        record(StepTypes.COMPARE, [edge.target, edge.source], [edge.id], `Pass ${i}: Relaxing edge from ${edge.target} to ${edge.source} (Weight ${edge.weight})`);
+        record(StepTypes.COMPARE, [edge.target, edge.source], [edge.id], `Pass ${i}: Relaxing edge from ${edge.target} to ${edge.source} (Weight ${edge.weight})`, 4);
         if (distances[edge.target] !== Infinity && distances[edge.target] + edge.weight < distances[edge.source]) {
           distances[edge.source] = distances[edge.target] + edge.weight;
           previousEdge[edge.source] = edge.id;
           visitedNodes.add(edge.source);
           anyChanges = true;
-          record(StepTypes.SWAP, [edge.source], [edge.id], `Updated distance to node ${edge.source} (New Cost: ${distances[edge.source]})`);
+          record(StepTypes.SWAP, [edge.source], [edge.id], `Updated distance to node ${edge.source} (New Cost: ${distances[edge.source]})`, 5);
         }
       }
     }
 
     if (!anyChanges) {
-      record(StepTypes.COMPARE, [], [], `Pass ${i} had no changes. We can early exit!`);
+      record(StepTypes.COMPARE, [], [], `Pass ${i} had no changes. We can early exit!`, 2);
       break;
     }
   }
@@ -78,9 +79,9 @@ export function generateBellmanFordSnapshots({ nodes, edges, startNodeId }) {
   }
 
   if (hasNegativeCycle) {
-    record(StepTypes.END, [], [], "WARNING: Negative-weight cycle detected! Shortest paths are undefined.");
+    record(StepTypes.END, [], [], "WARNING: Negative-weight cycle detected! Shortest paths are undefined.", 11);
   } else {
-    record(StepTypes.END, [], [], "Bellman-Ford Complete! Shortest paths found.");
+    record(StepTypes.END, [], [], "Bellman-Ford Complete! Shortest paths found.", -1);
   }
 
   return snapshots;

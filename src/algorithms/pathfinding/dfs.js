@@ -23,11 +23,11 @@ export function generateDFSSnapshots({ grid, startNode, endNode }) {
   const start = logicalGrid[startNode.row][startNode.col];
   const end = logicalGrid[endNode.row][endNode.col];
 
-  const record = (type, currentNodes, message, isEnd = false) => {
-    snapshots.push({ type, visitedNodes: [...visitedNodes], currentNodes, pathNodes: isEnd ? [...pathNodes] : [], message });
+  const record = (type, currentNodes, message, isEnd = false, activeLine) => {
+    snapshots.push({ type, visitedNodes: [...visitedNodes], currentNodes, pathNodes: isEnd ? [...pathNodes] : [], message, activeLine });
   };
 
-  record(StepTypes.START, [start], "Starting Depth-First Search (DFS)");
+  record(StepTypes.START, [start], "Starting Depth-First Search (DFS)", false, 0);
 
   const stack = [start];
   let found = false;
@@ -39,10 +39,11 @@ export function generateDFSSnapshots({ grid, startNode, endNode }) {
       currentNode.isVisited = true;
       visitedNodes.push({ row: currentNode.row, col: currentNode.col });
 
-      record(StepTypes.COMPARE, [{ row: currentNode.row, col: currentNode.col }], `Plunging deep into node at row ${currentNode.row}, col ${currentNode.col}`);
+      record(StepTypes.COMPARE, [{ row: currentNode.row, col: currentNode.col }], `Plunging deep into node at row ${currentNode.row}, col ${currentNode.col}`, false, 2);
 
       if (currentNode.row === end.row && currentNode.col === end.col) {
         found = true;
+        record(StepTypes.COMPARE, [{ row: currentNode.row, col: currentNode.col }], `Target found!`, false, 5);
         break;
       }
 
@@ -62,9 +63,9 @@ export function generateDFSSnapshots({ grid, startNode, endNode }) {
       pathNodes.unshift({ row: curr.row, col: curr.col });
       curr = curr.previousNode;
     }
-    record(StepTypes.END, [], `Target found! (Warning: DFS does NOT guarantee the shortest path).`, true);
+    record(StepTypes.END, [], `Target found! (Warning: DFS does NOT guarantee the shortest path).`, true, -1);
   } else {
-    record(StepTypes.END, [], "No path exists to the target.", true);
+    record(StepTypes.END, [], "No path exists to the target.", true, -1);
   }
 
   return snapshots;

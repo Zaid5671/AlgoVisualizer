@@ -26,17 +26,18 @@ export function generateBFSSnapshots({ grid, startNode, endNode }) {
   const start = logicalGrid[startNode.row][startNode.col];
   const end = logicalGrid[endNode.row][endNode.col];
 
-  const record = (type, currentNodes, message, isEnd = false) => {
+  const record = (type, currentNodes, message, isEnd = false, activeLine) => {
     snapshots.push({
       type,
       visitedNodes: [...visitedNodes],
       currentNodes,
       pathNodes: isEnd ? [...pathNodes] : [],
-      message
+      message,
+      activeLine
     });
   };
 
-  record(StepTypes.START, [start], "Starting Breadth-First Search (BFS)");
+  record(StepTypes.START, [start], "Starting Breadth-First Search (BFS)", false, 0);
 
   const queue = [start];
   start.isVisited = true;
@@ -47,10 +48,11 @@ export function generateBFSSnapshots({ grid, startNode, endNode }) {
     const currentNode = queue.shift();
     visitedNodes.push({ row: currentNode.row, col: currentNode.col });
 
-    record(StepTypes.COMPARE, [{ row: currentNode.row, col: currentNode.col }], `Exploring node at row ${currentNode.row}, col ${currentNode.col}`);
+    record(StepTypes.COMPARE, [{ row: currentNode.row, col: currentNode.col }], `Exploring node at row ${currentNode.row}, col ${currentNode.col}`, false, 3);
 
     if (currentNode.row === end.row && currentNode.col === end.col) {
       found = true;
+      record(StepTypes.COMPARE, [{ row: currentNode.row, col: currentNode.col }], `Target found!`, false, 4);
       break;
     }
 
@@ -71,9 +73,9 @@ export function generateBFSSnapshots({ grid, startNode, endNode }) {
       pathNodes.unshift({ row: curr.row, col: curr.col }); // Insert at beginning
       curr = curr.previousNode;
     }
-    record(StepTypes.END, [], `Target found! The shortest path is ${pathNodes.length - 1} steps.`, true);
+    record(StepTypes.END, [], `Target found! The shortest path is ${pathNodes.length - 1} steps.`, true, -1);
   } else {
-    record(StepTypes.END, [], "No path exists to the target.", true);
+    record(StepTypes.END, [], "No path exists to the target.", true, -1);
   }
 
   return snapshots;

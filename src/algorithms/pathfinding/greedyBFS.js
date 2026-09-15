@@ -33,11 +33,11 @@ export function generateGreedyBFSSnapshots({ grid, startNode, endNode }) {
   
   start.h = manhattanDistance(start, end);
 
-  const record = (type, currentNodes, message, isEnd = false) => {
-    snapshots.push({ type, visitedNodes: [...visitedNodes], currentNodes, pathNodes: isEnd ? [...pathNodes] : [], message });
+  const record = (type, currentNodes, message, isEnd = false, activeLine) => {
+    snapshots.push({ type, visitedNodes: [...visitedNodes], currentNodes, pathNodes: isEnd ? [...pathNodes] : [], message, activeLine });
   };
 
-  record(StepTypes.START, [start], "Starting Greedy Best-First Search");
+  record(StepTypes.START, [start], "Starting Greedy Best-First Search", false, 0);
 
   const unvisitedNodes = [];
   for (const row of logicalGrid) {
@@ -57,10 +57,11 @@ export function generateGreedyBFSSnapshots({ grid, startNode, endNode }) {
     closestNode.isVisited = true;
     visitedNodes.push({ row: closestNode.row, col: closestNode.col });
 
-    record(StepTypes.COMPARE, [{ row: closestNode.row, col: closestNode.col }], `Moving to node that looks closest to target (Heuristic: ${closestNode.h})`);
+    record(StepTypes.COMPARE, [{ row: closestNode.row, col: closestNode.col }], `Moving to node that looks closest to target (Heuristic: ${closestNode.h})`, false, 2);
 
     if (closestNode.row === end.row && closestNode.col === end.col) {
       found = true;
+      record(StepTypes.COMPARE, [{ row: closestNode.row, col: closestNode.col }], `Target found!`, false, 3);
       break;
     }
 
@@ -82,9 +83,9 @@ export function generateGreedyBFSSnapshots({ grid, startNode, endNode }) {
       pathNodes.unshift({ row: curr.row, col: curr.col });
       curr = curr.previousNode;
     }
-    record(StepTypes.END, [], `Target found! (Warning: May not be the absolute shortest path).`, true);
+    record(StepTypes.END, [], `Target found! (Warning: May not be the absolute shortest path).`, true, -1);
   } else {
-    record(StepTypes.END, [], "No path exists to the target.", true);
+    record(StepTypes.END, [], "No path exists to the target.", true, -1);
   }
 
   return snapshots;

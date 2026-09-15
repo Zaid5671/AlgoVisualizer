@@ -5,17 +5,18 @@ export function generateRadixSortSnapshots(initialArray) {
   let arr = [...initialArray];
   const n = arr.length;
   
-  const record = (type, activeIndices, message) => {
+  const record = (type, activeIndices, message, activeLine) => {
     // Radix sort settles everything at the very end
-    snapshots.push({ type, array: [...arr], activeIndices, settledIndices: [], message });
+    snapshots.push({ type, array: [...arr], activeIndices, settledIndices: [], message, activeLine });
   };
 
-  record(StepTypes.START, [], "Starting Radix Sort");
+  record(StepTypes.START, [], "Starting Radix Sort", -1);
 
   let max = Math.max(...arr, 0); // Handle empty array case safely
+  record(StepTypes.PIVOT, [], `Found max element: ${max}`, 0);
   
   for (let exp = 1; Math.floor(max / exp) > 0; exp *= 10) {
-    record(StepTypes.PIVOT, [], `Sorting based on digit: ${exp}'s place`);
+    record(StepTypes.PIVOT, [], `Sorting based on digit: ${exp}'s place`, 1);
     
     let output = new Array(n).fill(0);
     let count = new Array(10).fill(0);
@@ -24,7 +25,7 @@ export function generateRadixSortSnapshots(initialArray) {
     for (let i = 0; i < n; i++) {
       let digit = Math.floor(arr[i] / exp) % 10;
       count[digit]++;
-      record(StepTypes.COMPARE, [i], `Looking at element ${arr[i]}, digit is ${digit}`);
+      record(StepTypes.COMPARE, [i], `Looking at element ${arr[i]}, digit is ${digit}`, 5);
     }
 
     // Cumulative sum
@@ -42,7 +43,7 @@ export function generateRadixSortSnapshots(initialArray) {
     // Copy back to original array
     for (let i = 0; i < n; i++) {
       arr[i] = output[i];
-      record(StepTypes.SWAP, [i], `Placing ${arr[i]} into its bucket-sorted position for this digit`);
+      record(StepTypes.SWAP, [i], `Placing ${arr[i]} into its bucket-sorted position for this digit`, 16);
     }
   }
 
@@ -53,7 +54,8 @@ export function generateRadixSortSnapshots(initialArray) {
     array: [...arr], 
     activeIndices: [], 
     settledIndices: settled, 
-    message: "Array is fully sorted!" 
+    message: "Array is fully sorted!",
+    activeLine: -1
   });
 
   return snapshots;
