@@ -152,38 +152,74 @@ export function Sidebar({ activeKey, onSelect, algorithms, isOpen, onToggle }) {
           display: 'flex', justifyContent: 'center', alignItems: 'center',
           backdropFilter: 'blur(4px)'
         }}>
-          <div style={{
-            backgroundColor: 'var(--surface-color, #fbf9f6)',
-            border: '4px solid black',
-            boxShadow: '8px 8px 0px rgba(0,0,0,1)',
-            width: '90%', maxWidth: '600px',
-            maxHeight: '90vh', overflowY: 'auto',
-            padding: '2rem', position: 'relative'
-          }}>
-            <button 
-              onClick={() => setIsAboutOpen(false)}
-              style={{
-                position: 'absolute', top: '1rem', right: '1rem',
-                background: 'none', border: '2px solid black',
-                cursor: 'pointer', padding: '0.25rem',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                backgroundColor: 'var(--accent-pink)'
-              }}
-            >
-              <X size={20} />
-            </button>
-            
-            <h2 style={{ marginTop: 0, fontSize: '2rem', borderBottom: '2px solid black', paddingBottom: '1rem', fontFamily: 'Space Grotesk, sans-serif' }}>
-              why I built this
-            </h2>
-            
-            <div style={{ fontSize: '1.1rem', lineHeight: 1.6, marginTop: '2rem', fontFamily: 'Space Grotesk, sans-serif', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <p>I’ve always found algorithms easier to understand when I can see what’s actually happening, not just read the theory.</p>
-              <p>Specimen started from that idea: a small space to slow algorithms down, step through every decision, and make the logic feel a little less intimidating.</p>
-              <p>I built this to make DSA more visual, interactive, and fun to explore — whether you’re learning from scratch, preparing for interviews, or just curious about how an algorithm works.</p>
-              <p>Hopefully, it helps you understand algorithms instead of just memorizing them.</p>
-            </div>
-          </div>
+          <main className="w-full max-w-2xl relative p-4">
+            <article className="bg-[#FBF9F6] border-[2.5px] border-black rounded-none shadow-[8px_8px_0px_#18181B] overflow-hidden relative">
+              
+              {/* Header */}
+              <header className="bg-[#F3F1EC] border-b-[2.5px] border-black px-4 py-2.5 flex items-center justify-between select-none">
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 border border-black animate-pulse"></span>
+                  <span className="font-mono text-[11px] sm:text-xs font-bold tracking-tight text-zinc-800">
+                    SYS // ORIGIN_STORY <span className="text-zinc-400">/</span> SPECIMEN_NOTE_01
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <button 
+                    onClick={() => setIsAboutOpen(false)}
+                    className="w-8 h-8 flex items-center justify-center bg-pink-200 hover:bg-pink-300 border-2 border-black shadow-[2px_2px_0px_#18181B] text-zinc-900 cursor-pointer transition-transform active:translate-y-[2px] active:translate-x-[2px] active:shadow-[0px_0px_0px_#18181B]"
+                    type="button"
+                  >
+                    <X size={16} strokeWidth={3} />
+                  </button>
+                </div>
+              </header>
+
+              {/* Body */}
+              <section className="p-6 sm:p-10 font-sans">
+                <div className="mb-7">
+                  <h1 className="font-extrabold text-3xl sm:text-4xl lg:text-[42px] tracking-tight leading-none text-zinc-900 mb-4" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+                    why I built this
+                  </h1>
+                  <div className="w-full h-[2.5px] bg-black"></div>
+                </div>
+
+                <div className="space-y-5 text-base sm:text-lg text-zinc-700 leading-relaxed" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+                  <p>
+                    I’ve always found algorithms easier to understand when I can <mark className="bg-amber-200 px-1.5 py-0.5 rounded-none font-semibold text-zinc-900 border-b-2 border-amber-400">see what’s actually happening</mark>, not just read the theory.
+                  </p>
+                  <p>
+                    <strong className="font-bold text-zinc-900">Specimen</strong> started from that idea: a small space to slow algorithms down, step through every decision, and make the logic feel a little less intimidating.
+                  </p>
+                  <p>
+                    I built this to make <abbr className="no-underline border-b-2 border-dashed border-zinc-900 font-bold text-zinc-900" title="Data Structures & Algorithms">DSA</abbr> more visual, interactive, and fun to explore — whether you’re learning from scratch, preparing for interviews, or just curious about how an algorithm works.
+                  </p>
+                  
+                  <blockquote className="my-6 border-l-4 border-black bg-[#F3F1EC] p-4 sm:p-5 text-zinc-900 shadow-sm flex items-start gap-3">
+                    <span className="font-mono text-xl font-bold text-zinc-500 leading-none select-none">“</span>
+                    <p className="font-medium text-base sm:text-lg italic text-zinc-900">
+                      Hopefully, it helps you <strong className="font-bold text-zinc-900 underline decoration-2 underline-offset-4 decoration-amber-400 not-italic">understand algorithms</strong> instead of just memorizing them.
+                    </p>
+                  </blockquote>
+                </div>
+              </section>
+
+              {/* Footer */}
+              <footer className="bg-[#F3F1EC] border-t-[2px] border-dashed border-zinc-400 px-6 sm:px-10 py-4 sm:py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-[11px] font-bold px-2 py-0.5 bg-white border border-black">
+                      [SPECIMEN LAB]
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 text-zinc-600 text-sm">
+                    <span className="text-xl text-zinc-900 leading-none" style={{ fontFamily: 'Kalam, cursive' }}>Built by a fellow engineer</span>
+                    <span className="text-zinc-400 font-mono text-xs">•</span>
+                  </div>
+                </div>
+              </footer>
+
+            </article>
+          </main>
         </div>
       )}
     </div>
