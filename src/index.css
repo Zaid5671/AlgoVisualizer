@@ -1,4 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..700&family=Kalam:wght@400;700&family=JetBrains+Mono:wght@400;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
   --bg-color: #fdfaf6;
@@ -54,25 +57,24 @@ h1 {
 /* Layout */
 .app-container {
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
 }
 
 .sidebar {
-  width: 280px;
   flex-shrink: 0;
   border-right: 2px solid var(--border-color);
-  padding: 2rem;
   display: flex;
   flex-direction: column;
 }
 
 .main-content {
   flex-grow: 1;
-  padding: 2rem 4rem;
+  padding: 2rem;
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  max-width: 1200px;
+  overflow-y: auto;
 }
 
 /* Sidebar Elements */
@@ -582,4 +584,59 @@ h1 {
   0% { transform: scale(0.6); }
   50% { transform: scale(1.2); }
   100% { transform: scale(1); }
+}
+
+/* --- Landing Page Scoped Styles --- */
+.landing-page-scope .bg-lab-matrix {
+  background-color: #fbf9f6;
+  background-image: 
+    linear-gradient(to right, rgba(24, 24, 27, 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(24, 24, 27, 0.06) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+.landing-page-scope .brutal-shadow-sm { box-shadow: 2px 2px 0px #000000; }
+.landing-page-scope .brutal-shadow-md { box-shadow: 4px 4px 0px #000000; }
+.landing-page-scope .brutal-shadow-lg { box-shadow: 6px 6px 0px #000000; }
+.landing-page-scope .brutal-shadow-xl { box-shadow: 8px 8px 0px #000000; }
+.landing-page-scope .brutal-btn-active:active {
+  transform: translate(2px, 2px);
+  box-shadow: 0px 0px 0px #000000;
+}
+.landing-page-scope .brutal-btn-hover:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0px #000000;
+}
+.landing-page-scope ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.landing-page-scope ::-webkit-scrollbar-track {
+  background: #1b1b1e;
+}
+.landing-page-scope ::-webkit-scrollbar-thumb {
+  background: #f2e580;
+}
+.landing-page-scope *,
+.landing-page-scope ::before,
+.landing-page-scope ::after {
+  box-sizing: border-box;
+  border-width: 0;
+  border-style: solid;
+  border-color: #e5e7eb;
+}
+.landing-page-scope h1,
+.landing-page-scope h2,
+.landing-page-scope h3,
+.landing-page-scope h4,
+.landing-page-scope h5,
+.landing-page-scope h6,
+.landing-page-scope p {
+  margin: 0;
+}
+.landing-page-scope button {
+  background-color: transparent;
+  background-image: none;
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
 }
