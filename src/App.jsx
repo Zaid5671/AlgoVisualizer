@@ -19,7 +19,7 @@ function AlgorithmLayout() {
   
   const initialAlgo = categoryParam === 'sorting' ? 'bubbleSort' :
                       categoryParam === 'pathfinding' ? 'bfs' :
-                      categoryParam === 'graph' ? 'graphBfs' :
+                      categoryParam === 'graph' ? 'bfsGraph' :
                       categoryParam === 'backtracking' ? 'nQueens' :
                       'bubbleSort';
 
