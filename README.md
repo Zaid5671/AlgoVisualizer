@@ -4,8 +4,15 @@
 
 Unlike static visualizers, Specimen allows you to dynamically interact with the data *while* the algorithms are running—such as drawing walls in a maze, dragging graph nodes around, or changing edge weights on the fly.
 
-![Specimen UI](src/assets/hero.png) 
-*(Note: To add images here or elsewhere in this file, copy your image into the `src/assets/` directory (e.g. `my-image.png`), then update the markdown link to point to it like this: `![Description](src/assets/my-image.png)`)*
+![Landing Page](src/assets/landing.png)
+<p align="center">
+  <img src="src/assets/sorting.png" width="48%" />
+  <img src="src/assets/pathfinding.png" width="48%" />
+</p>
+<p align="center">
+  <img src="src/assets/graph.png" width="48%" />
+  <img src="src/assets/backtracking.png" width="48%" />
+</p>
 
 ---
 
