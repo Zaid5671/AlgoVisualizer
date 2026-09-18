@@ -1,8 +1,8 @@
-# Specimen: AlgoVisualizer
+# SPIT Algo Visualizer
 
-**Specimen** is a highly interactive, neo-brutalist Algorithm Visualizer. It provides a "lil algorithm lab" environment where developers and students can observe complex algorithms executing step-by-step in real-time. 
+**SPIT Algo Visualizer** is a highly interactive, neo-brutalist Algorithm Visualizer. It provides a "lil algorithm lab" environment where developers and students can observe complex algorithms executing step-by-step in real-time. 
 
-Unlike static visualizers, Specimen allows you to dynamically interact with the data *while* the algorithms are running—such as drawing walls in a maze, dragging graph nodes around, or changing edge weights on the fly.
+Unlike static visualizers, SPIT Algo Visualizer allows you to dynamically interact with the data *while* the algorithms are running—such as drawing walls in a maze, dragging graph nodes around, or changing edge weights on the fly.
 
 ![Landing Page](src/assets/landing.png)
 <p align="center">
@@ -21,7 +21,9 @@ Unlike static visualizers, Specimen allows you to dynamically interact with the 
 - **🎨 Neo-Brutalist UI Design:** A clean, high-contrast interface designed for maximum readability, featuring a beautiful custom landing page.
 - **🔍 Global Code Tracer:** A dedicated right sidebar tracks the exact line of execution through the source code in real-time, visualizing recursive call stacks and active variables at every single step!
 - **⏱️ Custom Playback Engine:** Play, pause, rewind, or scrub through algorithms step-by-step using a custom React hook built on ES6 Generators.
-- **🕹️ Interactive Data Structures:** Drag-and-drop graph nodes, draw walls/mud on grids, and edit edge weights in real-time without breaking the playback state.
+- **🕹️ Interactive Practice Mode:** Stop just watching! Toggle on "practice it yourself" mode to predict and execute the algorithm's next move yourself (e.g., drag and drop array bars to swap, or select the next graph node to visit). Get real-time feedback on incorrect guesses!
+- **🏗️ Build Your Own Graph:** Manually configure entirely custom graph networks from scratch. Specify node counts and feed custom edges (e.g. `A-B-5`), and the visualizer will instantly construct your network for traversal algorithms.
+- **🔢 Custom Data Inputs:** Feed the sorting visualizer your own exact comma-separated array of numbers, or use the size slider to instantly generate arrays of massive sizes.
 - **🧠 Integrated AI Chatbot:** Ask questions about the currently running algorithm and get context-aware answers based on the algorithm's exact current state.
 - **📖 Live Pseudocode:** Follow along with the algorithm's logic as it executes.
 
@@ -45,6 +47,7 @@ Unlike static visualizers, Specimen allows you to dynamically interact with the 
 - **Styling:** Tailwind CSS v3 & Pure CSS (CSS variables, Flexbox, Grid)
 - **Icons:** Lucide-React
 - **Visualization:** Native DOM Elements & SVG
+- **Testing:** Playwright (Automated End-to-End Test Suite)
 
 ---
 
@@ -64,6 +67,7 @@ src/
 ├── engine/           # The core Playback Engine (usePlayback.js, stepTypes.js)
 ├── views/            # Major visual layouts (LandingPage, GraphView, PathfindingView, SortingView, BacktrackingView)
 └── App.jsx           # Main router and layout shell
+tests/                # Playwright E2E Test Suite (algorithms.spec.js)
 ```
 
 ---
@@ -107,11 +111,31 @@ npm install
 ```
 
 ### 3. Start the development server
+
+There are two ways to run this project locally, depending on whether you want to use the AI Chatbot feature.
+
+#### Option A: Standard Mode (No AI Chatbot)
+If you only want to use the algorithm visualizer, you can run the standard Vite server:
 ```bash
 npm run dev
 ```
-
 The application will be available at `http://localhost:5173`.
+
+#### Option B: Full Mode (With AI Chatbot enabled)
+The AI Chatbot requires a secure backend to hold API keys. We use Vercel Serverless Functions (`/api/chat.js`) for this. To run this locally:
+
+1. Install the Vercel CLI globally: `npm i -g vercel`
+2. Create a `.env` file in the root directory and add your Gemini API key:
+   ```env
+   GEMINI_API_KEY="your_api_key_here"
+   ```
+3. Run the Vercel dev server:
+   ```bash
+   vercel dev
+   ```
+   *(Note: On your first run, Vercel will ask you to log in and link the folder to a new Vercel project on your account. Simply follow the terminal prompts!)*
+
+The application will be available at `http://localhost:3000`.
 
 ---
 
@@ -128,7 +152,6 @@ The application will be available at `http://localhost:5173`.
 
 ## Future Improvements
 
-- Add support for custom graph sizes and randomized weights.
 - Implement user-uploaded Sudoku puzzles.
 - Add Maze Generation algorithms (Recursive Division, Prim's Maze).
 - Mobile responsiveness for smaller viewports.
