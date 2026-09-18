@@ -78,3 +78,52 @@ export const PRESET_GRAPHS = {
     ]
   }
 };
+
+export function generateGraph(n) {
+  if (PRESET_GRAPHS[n]) return PRESET_GRAPHS[n];
+  
+  const nodes = [];
+  const edges = [];
+  const cx = 400;
+  const cy = 200;
+  const radius = 160;
+
+  for (let i = 0; i < n; i++) {
+    const angle = (2 * Math.PI * i) / n - Math.PI / 2; // Start at top
+    nodes.push({
+      id: i,
+      x: cx + radius * Math.cos(angle),
+      y: cy + radius * Math.sin(angle)
+    });
+  }
+
+  // Create a ring to ensure connectedness
+  for (let i = 0; i < n; i++) {
+    edges.push({
+      id: `e-${i}-${(i + 1) % n}`,
+      source: i,
+      target: (i + 1) % n,
+      weight: Math.floor(Math.random() * 9) + 1
+    });
+  }
+
+  // Add some random chords for complexity
+  const numChords = Math.max(0, n - 4);
+  for (let i = 0; i < numChords; i++) {
+    const u = Math.floor(Math.random() * n);
+    const v = Math.floor(Math.random() * n);
+    if (u !== v && Math.abs(u - v) !== 1 && Math.abs(u - v) !== n - 1) {
+      // Avoid duplicate edges
+      if (!edges.some(e => (e.source === u && e.target === v) || (e.source === v && e.target === u))) {
+        edges.push({
+          id: `e-${u}-${v}`,
+          source: u,
+          target: v,
+          weight: Math.floor(Math.random() * 9) + 1
+        });
+      }
+    }
+  }
+
+  return { nodes, edges };
+}

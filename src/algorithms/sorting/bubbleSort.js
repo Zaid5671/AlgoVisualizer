@@ -77,26 +77,14 @@ export function generateBubbleSortSnapshots(initialArray) {
       });
   }
 
-  // Backfill settled indices for previous steps so they stay rendered
+  // We don't want to backfill SETTLED indices to the beginning of the algorithm.
+  // Instead, forward fill them so once an element is settled, it stays settled in future steps.
   let currentSettled = [];
-  for (let i = snapshots.length - 1; i >= 0; i--) {
+  for (let i = 0; i < snapshots.length; i++) {
     if (snapshots[i].settledIndices && snapshots[i].settledIndices.length > currentSettled.length) {
       currentSettled = snapshots[i].settledIndices;
     } else {
       snapshots[i].settledIndices = currentSettled;
-    }
-  }
-  // Actually, bubbling backfill: we want the settled ones from the PAST, not the future.
-  // Let's rewrite the backfill:
-  currentSettled = [];
-  for (let i = 0; i < snapshots.length; i++) {
-    if (snapshots[i].type === StepTypes.SETTLED) {
-      // It grew
-      currentSettled = [...snapshots[i].settledIndices];
-    } else if (snapshots[i].type === StepTypes.END) {
-       currentSettled = [...snapshots[i].settledIndices];
-    } else {
-      snapshots[i].settledIndices = [...currentSettled];
     }
   }
 
