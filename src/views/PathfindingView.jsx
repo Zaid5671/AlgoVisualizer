@@ -3,7 +3,6 @@ import { PlaybackControls } from '../components/PlaybackControls';
 import { usePlayback } from '../engine/usePlayback';
 import { StepTypes } from '../engine/stepTypes';
 import { Code2, Info, Play, Square } from 'lucide-react';
-import { Pseudocode } from '../components/Pseudocode';
 import { ChatbotWidget } from '../components/ChatbotWidget';
 
 const createInitialGrid = (rows, cols) => {
@@ -35,8 +34,7 @@ export function PathfindingView({ activeAlgorithm, onStep }) {
   const [drawMode, setDrawMode] = useState('wall');
   const [dragAction, setDragAction] = useState(null); // 'DRAW_WALL', 'DRAW_MUD', 'ERASE'
   
-  const [showPseudocode, setShowPseudocode] = useState(false);
-  
+    
   const [mode, setMode] = useState('watch'); // 'watch' | 'practice'
   const [practiceStep, setPracticeStep] = useState(0);
   const [practiceError, setPracticeError] = useState(null);
@@ -314,18 +312,10 @@ export function PathfindingView({ activeAlgorithm, onStep }) {
           </div>
         </div>
 
-        <button className="btn-pseudocode" onClick={() => setShowPseudocode(!showPseudocode)} style={{ marginTop: '1rem' }}>
-          <Code2 size={16} /> show pseudocode
-        </button>
-
-        <Pseudocode 
-          isOpen={showPseudocode} 
-          onClose={() => setShowPseudocode(false)} 
-          code={activeAlgorithm.pseudocode} 
-        />
-
+        
+        
         {mode === 'watch' && (
-          <PlaybackControls playback={playback} />
+          <PlaybackControls playback={playback} activeAlgorithm={activeAlgorithm} />
         )}
         
         <div className="operations-log card-box" style={{ padding: '0.5rem 1rem' }}>

@@ -3,7 +3,6 @@ import { PlaybackControls } from '../components/PlaybackControls';
 import { usePlayback } from '../engine/usePlayback';
 import { StepTypes } from '../engine/stepTypes';
 import { Code2, Info } from 'lucide-react';
-import { Pseudocode } from '../components/Pseudocode';
 import { ChatbotWidget } from '../components/ChatbotWidget';
 
 export function SortingView({ activeAlgorithm, onStep }) {
@@ -11,8 +10,7 @@ export function SortingView({ activeAlgorithm, onStep }) {
   const [customArrayStr, setCustomArrayStr] = useState('');
   const [initialArray, setInitialArray] = useState([]);
   const [logFilter, setLogFilter] = useState('all');
-  const [showPseudocode, setShowPseudocode] = useState(false);
-  
+    
   // Practice Mode State
   const [mode, setMode] = useState('watch'); // 'watch' | 'practice'
   const [practiceStep, setPracticeStep] = useState(0);
@@ -267,20 +265,10 @@ export function SortingView({ activeAlgorithm, onStep }) {
             <button type="submit" className="btn-use-this">use this</button>
           </form>
 
-          {activeAlgorithm.id !== 'bubbleSort' && (
-            <button className="btn-pseudocode" onClick={() => setShowPseudocode(!showPseudocode)}>
-              <Code2 size={16} /> show pseudocode
-            </button>
-          )}
-
-          <Pseudocode 
-            isOpen={showPseudocode} 
-            onClose={() => setShowPseudocode(false)} 
-            code={activeAlgorithm.pseudocode} 
-          />
-
+          
+          
           {mode === 'watch' && (
-            <PlaybackControls playback={playback} />
+            <PlaybackControls playback={playback} activeAlgorithm={activeAlgorithm} />
           )}
           
           <div className="log-filters">

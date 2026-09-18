@@ -3,7 +3,6 @@ import { PlaybackControls } from '../components/PlaybackControls';
 import { usePlayback } from '../engine/usePlayback';
 import { StepTypes } from '../engine/stepTypes';
 import { Code2, Info, X, Plus } from 'lucide-react';
-import { Pseudocode } from '../components/Pseudocode';
 import { ChatbotWidget } from '../components/ChatbotWidget';
 import { PRESET_GRAPHS, generateGraph } from '../data/presetGraphs';
 
@@ -21,8 +20,7 @@ export function GraphView({ activeAlgorithm, onStep }) {
     return init;
   });
   
-  const [showPseudocode, setShowPseudocode] = useState(false);
-  const [draggingNodeId, setDraggingNodeId] = useState(null);
+    const [draggingNodeId, setDraggingNodeId] = useState(null);
   
   const [mode, setMode] = useState('watch'); // 'watch' | 'practice'
   const [practiceStep, setPracticeStep] = useState(0);
@@ -331,7 +329,7 @@ export function GraphView({ activeAlgorithm, onStep }) {
           </svg>
         </div>
 
-        {mode === 'watch' && <PlaybackControls playback={playback} />}
+        {mode === 'watch' && <PlaybackControls playback={playback} activeAlgorithm={activeAlgorithm} />}
         
         <div className="operations-log card-box">
           <div className="log-header">
@@ -347,7 +345,7 @@ export function GraphView({ activeAlgorithm, onStep }) {
 
         {showConfigModal && (
           <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.4)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-             <div style={{ background: 'white', padding: '2rem', borderRadius: '16px', width: '500px', boxShadow: 'var(--ink-shadow-lg)' }}>
+             <div style={{ background: 'white', padding: '2rem', borderRadius: '16px', width: '90%', maxWidth: '500px', boxShadow: 'var(--ink-shadow-lg)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
                   <h3 style={{ margin: 0, fontFamily: 'Inter, sans-serif' }}>Configure Graph Manually</h3>
                   <button onClick={() => setShowConfigModal(false)} style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}><X size={20}/></button>

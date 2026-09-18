@@ -3,14 +3,12 @@ import { PlaybackControls } from '../components/PlaybackControls';
 import { usePlayback } from '../engine/usePlayback';
 import { StepTypes } from '../engine/stepTypes';
 import { Code2, Info } from 'lucide-react';
-import { Pseudocode } from '../components/Pseudocode';
 import { ChatbotWidget } from '../components/ChatbotWidget';
 import { BACKTRACKING_PUZZLES } from '../data/backtrackingPuzzles';
 import { PRESET_GRAPHS } from '../data/presetGraphs';
 
 export function BacktrackingView({ activeAlgorithm, onStep }) {
-  const [showPseudocode, setShowPseudocode] = useState(false);
-  const [mode, setMode] = useState('watch'); // 'watch' | 'practice'
+    const [mode, setMode] = useState('watch'); // 'watch' | 'practice'
   const [practiceStep, setPracticeStep] = useState(0);
   const [practiceError, setPracticeError] = useState(null);
   const [showTutorial, setShowTutorial] = useState(false);
@@ -267,7 +265,7 @@ export function BacktrackingView({ activeAlgorithm, onStep }) {
           {renderBoard()}
         </div>
 
-        {mode === 'watch' && <PlaybackControls playback={playback} />}
+        {mode === 'watch' && <PlaybackControls playback={playback} activeAlgorithm={activeAlgorithm} />}
         
         <div className="operations-log card-box">
           <div className="log-header">
@@ -300,11 +298,7 @@ export function BacktrackingView({ activeAlgorithm, onStep }) {
           </div>
         )}
 
-        <button className="btn-pseudocode" onClick={() => setShowPseudocode(!showPseudocode)} style={{ marginTop: '1rem' }}>
-          <Code2 size={16} /> show pseudocode
-        </button>
-        <Pseudocode isOpen={showPseudocode} onClose={() => setShowPseudocode(false)} code={activeAlgorithm.pseudocode} />
-
+                
       </div>
       <ChatbotWidget activeAlgorithm={activeAlgorithm} snapshot={snapshot} offsetRight="2rem" />
     </div>
