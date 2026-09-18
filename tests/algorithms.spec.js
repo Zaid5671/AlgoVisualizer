@@ -89,4 +89,25 @@ test.describe('Algorithm Visualizer E2E', () => {
     const lines = page.locator('svg line');
     await expect(lines).toHaveCount(3);
   });
+
+  test('Pseudocode button is globally consistent and renders correctly', async ({ page }) => {
+    // Check Sorting (Bubble Sort now has pseudocode)
+    await page.goto('/algorithm?category=sorting');
+    let pseudocodeBtn = page.locator('.btn-pseudocode');
+    await expect(pseudocodeBtn).toBeVisible();
+    await pseudocodeBtn.click();
+    let pseudocodeModal = page.locator('.pseudocode-modal');
+    await expect(pseudocodeModal).toBeVisible();
+    await page.locator('.pseudocode-modal button').click(); // Close it
+
+    // Check Graph
+    await page.goto('/algorithm?category=graph');
+    pseudocodeBtn = page.locator('.btn-pseudocode');
+    await expect(pseudocodeBtn).toBeVisible();
+
+    // Check Backtracking
+    await page.goto('/algorithm?category=backtracking');
+    pseudocodeBtn = page.locator('.btn-pseudocode');
+    await expect(pseudocodeBtn).toBeVisible();
+  });
 });
