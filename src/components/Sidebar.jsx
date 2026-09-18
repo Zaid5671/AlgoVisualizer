@@ -17,18 +17,10 @@ export function Sidebar({ activeKey, onSelect, algorithms, isOpen, onToggle, onO
   );
 
   return (
-    <div className="sidebar" style={{ 
-      width: isOpen ? '280px' : '60px', 
-      padding: isOpen ? '2rem 1rem 2rem 2rem' : '1rem 0.5rem', 
-      transition: 'width 0.2s ease', 
-      display: 'flex', 
-      flexDirection: 'column',
-      height: '100%',
-      overflow: 'hidden'
-    }}>
+    <div className={`sidebar ${isOpen ? 'open' : 'closed'}`}>
       
       {/* FIXED HEADER: Logo and Toggle side-by-side */}
-      <div style={{ 
+      <div className="sidebar-header" style={{ 
         display: 'flex', 
         alignItems: 'flex-start', 
         justifyContent: isOpen ? 'space-between' : 'center', 
