@@ -24,3 +24,9 @@ dist-ssr
 *.sw?
 .env
 .gemini
+.vercel
+.env*
+playwright-report/
+test-results/
+blob-report/
+brain/
