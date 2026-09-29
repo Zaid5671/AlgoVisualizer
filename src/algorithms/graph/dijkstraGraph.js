@@ -1,4 +1,5 @@
 import { StepTypes } from '../../engine/stepTypes';
+import { nodeLabel } from '../../utils/nodeLabel';
 
 export function generateDijkstraGraphSnapshots({ nodes, edges, startNodeId }) {
   const snapshots = [];
@@ -45,7 +46,7 @@ export function generateDijkstraGraphSnapshots({ nodes, edges, startNodeId }) {
       visitedEdges.push(previousEdge[currentId]);
     }
 
-    record(StepTypes.COMPARE, [currentId], previousEdge[currentId] ? [previousEdge[currentId]] : [], `Locked in shortest path to node ${currentId} (Cost: ${distances[currentId]})`, 3);
+    record(StepTypes.COMPARE, [currentId], previousEdge[currentId] ? [previousEdge[currentId]] : [], `Locked in shortest path to node ${nodeLabel(currentId)} (Cost: ${distances[currentId]})`, 3);
 
     // Find neighbors
     const adjacentEdges = edges.filter(e => e.source === currentId || (!e.isDirected && e.target === currentId));
@@ -54,13 +55,13 @@ export function generateDijkstraGraphSnapshots({ nodes, edges, startNodeId }) {
       const neighborId = edge.source === currentId ? edge.target : edge.source;
       
       if (unvisited.has(neighborId)) {
-        record(StepTypes.COMPARE, [currentId, neighborId], [edge.id], `Checking edge to ${neighborId} (Weight: ${edge.weight})`, 4);
+        record(StepTypes.COMPARE, [currentId, neighborId], [edge.id], `Checking edge to ${nodeLabel(neighborId)} (Weight: ${edge.weight})`, 4);
         
         const altDistance = distances[currentId] + edge.weight;
         if (altDistance < distances[neighborId]) {
           distances[neighborId] = altDistance;
           previousEdge[neighborId] = edge.id;
-          record(StepTypes.SWAP, [neighborId], [edge.id], `Found cheaper path to ${neighborId}! (New Cost: ${altDistance})`, 7);
+          record(StepTypes.SWAP, [neighborId], [edge.id], `Found cheaper path to ${nodeLabel(neighborId)}! (New Cost: ${altDistance})`, 7);
         }
       }
     }

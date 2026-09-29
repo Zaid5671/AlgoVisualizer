@@ -1,418 +1,372 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { MousePointer2, CirclePlus, Spline, Eraser, FileText, Shuffle, Trash2, Info, AlertTriangle, Flag, CheckCircle2 } from 'lucide-react';
 import { PlaybackControls } from '../components/PlaybackControls';
 import { usePlayback } from '../engine/usePlayback';
-import { StepTypes } from '../engine/stepTypes';
-import { Code2, Info, X, Plus } from 'lucide-react';
 import { ChatbotWidget } from '../components/ChatbotWidget';
-import { PRESET_GRAPHS, generateGraph } from '../data/presetGraphs';
+import { SegmentedControl } from '../components/ui/SegmentedControl';
+import { Legend } from '../components/ui/Legend';
+import { OperationsLog } from '../components/OperationsLog';
+import { GraphCanvas } from '../components/graph/GraphCanvas';
+import { GraphTextEditor } from '../components/graph/GraphTextEditor';
+import {
+  PRESETS, randomGraph, emptyGraph, nodeLabel, algorithmTraits, effectiveDirected,
+  addNode, moveNode, removeNode, addEdge, removeEdge, setEdgeWeight,
+  validateGraph, structureKey, MAX_NODES,
+} from '../graph/graphModel';
 
-const CANVAS_WIDTH = 800;
-const CANVAS_HEIGHT = 400;
-const NODE_RADIUS = 20;
+const MODES = [
+  { value: 'watch', label: 'watch' },
+  { value: 'practice', label: 'practice it yourself' },
+];
+
+const TOOLS = [
+  { value: 'move', label: <><MousePointer2 size={14} /> Move</>, hint: 'Drag nodes to rearrange. Click a node or edge to inspect it.' },
+  { value: 'node', label: <><CirclePlus size={14} /> Node</>, hint: 'Click empty space to add a node.' },
+  { value: 'edge', label: <><Spline size={14} /> Edge</>, hint: 'Click a node, then another node, to connect them.' },
+  { value: 'delete', label: <><Eraser size={14} /> Delete</>, hint: 'Click a node or edge to remove it.' },
+];
+
+const LEGEND = [
+  { label: 'start', color: 'var(--pink)' },
+  { label: 'current', color: 'var(--yellow)' },
+  { label: 'visited', color: 'var(--blue)' },
+  { label: 'tree / chosen edge', color: 'var(--ink)' },
+];
+
+const initialGraph = () => PRESETS[0].build();
+
+function WeightInput({ edge, onCommit }) {
+  const [value, setValue] = useState(String(edge.weight));
+  const commit = () => {
+    const n = parseInt(value, 10);
+    if (Number.isNaN(n)) setValue(String(edge.weight));
+    else onCommit(n);
+  };
+  return (
+    <input
+      className="text-input text-input--sm"
+      value={value}
+      inputMode="numeric"
+      aria-label="Edge weight"
+      onChange={e => setValue(e.target.value.replace(/[^\d-]/g, ''))}
+      onBlur={commit}
+      onKeyDown={e => { if (e.key === 'Enter') e.currentTarget.blur(); }}
+    />
+  );
+}
 
 export function GraphView({ activeAlgorithm, onStep }) {
-  const isDirected = activeAlgorithm.id === 'tarjans';
-  const isWeighted = ['dijkstraGraph', 'bellmanFord', 'kruskals', 'prims'].includes(activeAlgorithm.id);
-  
-  const [graphData, setGraphData] = useState(() => {
-    const init = JSON.parse(JSON.stringify(generateGraph(8)));
-    if (isDirected) init.edges.forEach(e => e.isDirected = true);
-    return init;
-  });
-  
-    const [draggingNodeId, setDraggingNodeId] = useState(null);
-  
-  const [mode, setMode] = useState('watch'); // 'watch' | 'practice'
+  const traits = algorithmTraits(activeAlgorithm.id);
+
+  const [graph, setGraph] = useState(initialGraph);
+  const [userDirected, setUserDirected] = useState(false);
+  const [startChoice, setStartChoice] = useState(0);
+  const [tool, setTool] = useState('move');
+  const [selection, setSelection] = useState(null);
+  const [showTextEditor, setShowTextEditor] = useState(false);
+
+  const [mode, setMode] = useState('watch');
   const [practiceStep, setPracticeStep] = useState(0);
   const [practiceError, setPracticeError] = useState(null);
   const [showTutorial, setShowTutorial] = useState(false);
 
-  const [showConfigModal, setShowConfigModal] = useState(false);
-  const [configNodes, setConfigNodes] = useState(5);
-  const [configEdges, setConfigEdges] = useState("");
-  
-  const svgRef = useRef(null);
+  const directed = effectiveDirected(activeAlgorithm.id, userDirected);
+  // If the chosen start node was deleted, fall back to the first remaining node.
+  const startNodeId = graph.nodes.some(n => n.id === startChoice) ? startChoice : (graph.nodes[0]?.id ?? 0);
 
-  // Pre-fill config modal when opened
-  useEffect(() => {
-    if (showConfigModal) {
-      setConfigNodes(graphData.nodes.length);
-      const edgeStrs = graphData.edges.map(e => {
-        const src = String.fromCharCode(65 + e.source);
-        const tgt = String.fromCharCode(65 + e.target);
-        return isWeighted ? `${src}-${tgt}-${e.weight}` : `${src}-${tgt}`;
-      });
-      setConfigEdges(edgeStrs.join('\n'));
-    }
-  }, [showConfigModal, graphData, isWeighted]);
-
-  // Re-sync directed edges when algorithm changes, but preserve user's graph structure
-  useEffect(() => {
-    setGraphData(prev => ({
-      ...prev,
-      edges: prev.edges.map(e => ({ ...e, isDirected }))
-    }));
-    setDraggingNodeId(null);
+  // Restart practice when the algorithm changes (graph is kept so algorithms can be compared).
+  const [practiceAlgoId, setPracticeAlgoId] = useState(activeAlgorithm.id);
+  if (practiceAlgoId !== activeAlgorithm.id) {
+    setPracticeAlgoId(activeAlgorithm.id);
     setPracticeStep(0);
     setPracticeError(null);
-  }, [isDirected, activeAlgorithm.id]);
+  }
 
-  const inputEdges = useMemo(() => graphData.edges, [graphData.edges]); 
-  const inputData = useMemo(() => ({ 
-    nodes: graphData.nodes.map(n => n.id), 
-    edges: inputEdges, 
-    startNodeId: graphData.nodes.length > 0 ? graphData.nodes[0].id : 0 
-  }), [inputEdges, graphData.nodes]);
-  
+  // Only structural changes rebuild the algorithm input; dragging nodes doesn't restart playback.
+  const key = structureKey(graph, startNodeId, directed);
+  const inputData = useMemo(() => {
+    if (graph.nodes.length === 0) return null;
+    return {
+      nodes: graph.nodes.map(n => n.id),
+      edges: graph.edges.map(e => ({ ...e, isDirected: directed })),
+      startNodeId,
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key]);
+
   const playback = usePlayback(activeAlgorithm.generator, inputData);
   const { snapshot, snapshots, currentIndex } = playback.state;
 
   useEffect(() => {
-    if (snapshot && typeof onStep === 'function') {
-      onStep(snapshot);
-    }
+    if (snapshot && typeof onStep === 'function') onStep(snapshot);
   }, [snapshot, onStep]);
+
+  // Delete/Backspace removes the selection, Escape clears it.
+  useEffect(() => {
+    const onKeyDown = (e) => {
+      if (['INPUT', 'TEXTAREA'].includes(e.target.tagName) || mode !== 'watch') return;
+      if (e.key === 'Escape') setSelection(null);
+      if ((e.key === 'Delete' || e.key === 'Backspace') && selection) {
+        e.preventDefault();
+        setGraph(g => (selection.type === 'node' ? removeNode(g, selection.id) : removeEdge(g, selection.id)));
+        setSelection(null);
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [selection, mode]);
+
+  const replaceGraph = (next) => {
+    setGraph(next);
+    setSelection(null);
+    setPracticeStep(0);
+    setPracticeError(null);
+  };
+
+  const handleCanvasChange = (action) => {
+    switch (action.type) {
+      case 'moveNode':
+        setGraph(g => moveNode(g, action.id, action.x, action.y));
+        break;
+      case 'addNode':
+        setGraph(g => addNode(g, action.x, action.y));
+        break;
+      case 'removeNode':
+        setGraph(g => removeNode(g, action.id));
+        setSelection(null);
+        break;
+      case 'addEdge': {
+        const weight = traits.weighted ? Math.floor(Math.random() * 9) + 1 : 1;
+        setGraph(g => addEdge(g, action.source, action.target, weight, directed));
+        break;
+      }
+      case 'removeEdge':
+        setGraph(g => removeEdge(g, action.id));
+        setSelection(null);
+        break;
+      default:
+        break;
+    }
+  };
+
+  const handlePreset = (presetId) => {
+    const preset = PRESETS.find(p => p.id === presetId);
+    if (!preset) return;
+    replaceGraph(preset.build());
+    if (presetId === 'negative' || presetId === 'scc') setUserDirected(true);
+    setStartChoice(0);
+  };
 
   const handleModeChange = (newMode) => {
     setMode(newMode);
+    setSelection(null);
+    setPracticeStep(0);
+    setPracticeError(null);
     if (newMode === 'practice') {
       playback.actions.pause();
-      setPracticeStep(0);
-      setPracticeError(null);
       setShowTutorial(true);
     } else {
       playback.actions.reset();
     }
   };
 
-  const applyConfig = () => {
-    const nodes = [];
-    const cx = CANVAS_WIDTH / 2;
-    const cy = CANVAS_HEIGHT / 2;
-    const radius = Math.min(cx, cy) - 50;
-    
-    // Validate node count
-    const numNodes = Math.max(1, Math.min(26, configNodes));
-
-    for (let i = 0; i < numNodes; i++) {
-       const existing = graphData.nodes.find(n => n.id === i);
-       if (existing) {
-         nodes.push(existing); // preserve positions
-       } else {
-         const angle = (2 * Math.PI * i) / numNodes - Math.PI / 2;
-         nodes.push({
-           id: i,
-           x: cx + radius * Math.cos(angle),
-           y: cy + radius * Math.sin(angle)
-         });
-       }
-    }
-
-    const edges = [];
-    const lines = configEdges.split('\n').map(l => l.trim().toUpperCase()).filter(l => l);
-    lines.forEach((line, idx) => {
-       const parts = line.split(/[\s,-]+/);
-       if (parts.length >= 2) {
-          const uChar = parts[0].charCodeAt(0) - 65;
-          const vChar = parts[1].charCodeAt(0) - 65;
-          if (uChar >= 0 && uChar < numNodes && vChar >= 0 && vChar < numNodes && uChar !== vChar) {
-             let weight = 1;
-             if (isWeighted && parts[2]) {
-                weight = Number.isNaN(parseInt(parts[2])) ? 1 : parseInt(parts[2]);
-             }
-             // Avoid duplicate edges
-             const exists = edges.some(e => (e.source === uChar && e.target === vChar) || (!isDirected && e.source === vChar && e.target === uChar));
-             if (!exists) {
-               edges.push({
-                  id: `e-${uChar}-${vChar}-${idx}`,
-                  source: uChar,
-                  target: vChar,
-                  weight,
-                  isDirected
-               });
-             }
-          }
-       }
-    });
-
-    setGraphData({ nodes, edges });
-    setShowConfigModal(false);
-    playback.actions.reset();
-  };
-
-  // Compute expected node clicks for Practice Mode
+  // --- PRACTICE MODE (redesign planned; logic unchanged) ---
   const expectedClicks = useMemo(() => {
     if (!snapshots) return [];
     const sequence = [];
-    let currentVisited = new Set();
-    const startNode = inputData.startNodeId;
-    currentVisited.add(startNode);
-
-    for (let i = 0; i < snapshots.length; i++) {
-      const s = snapshots[i];
-      if (s.visitedNodes) {
-        for (const node of s.visitedNodes) {
-          if (!currentVisited.has(node)) {
-            currentVisited.add(node);
-            sequence.push({ snapshotIndex: i, nodeId: node });
-          }
+    const seen = new Set([startNodeId]);
+    snapshots.forEach((s, i) => {
+      for (const node of s.visitedNodes || []) {
+        if (!seen.has(node)) {
+          seen.add(node);
+          sequence.push({ snapshotIndex: i, nodeId: node });
         }
       }
-    }
+    });
     return sequence;
-  }, [snapshots, inputData.startNodeId]);
+  }, [snapshots, startNodeId]);
 
   const isPracticeComplete = practiceStep >= expectedClicks.length;
 
-  let practiceDisplaySnapshot = null;
-  if (mode === 'practice') {
-    if (practiceStep === 0) {
-      practiceDisplaySnapshot = snapshots[0];
-    } else if (isPracticeComplete) {
-      practiceDisplaySnapshot = snapshots[snapshots.length - 1];
-    } else {
-      practiceDisplaySnapshot = snapshots[expectedClicks[practiceStep - 1]?.snapshotIndex || 0];
-    }
+  let practiceDisplay = null;
+  if (mode === 'practice' && snapshots.length > 0) {
+    if (practiceStep === 0) practiceDisplay = snapshots[0];
+    else if (isPracticeComplete) practiceDisplay = snapshots[snapshots.length - 1];
+    else practiceDisplay = snapshots[expectedClicks[practiceStep - 1]?.snapshotIndex || 0];
   }
 
-  const currentDisplay = mode === 'watch' ? snapshot : practiceDisplaySnapshot;
+  const hasGraph = graph.nodes.length > 0;
+  const display = !hasGraph ? null : mode === 'watch' ? snapshot : practiceDisplay;
 
-  const handleNodeMouseDown = (id, e) => {
-    if (mode === 'practice') {
-      if (isPracticeComplete) return;
-      const expectedNodeId = expectedClicks[practiceStep].nodeId;
-      if (id === expectedNodeId) {
-        setPracticeStep(prev => prev + 1);
-        setPracticeError(null);
-      } else {
-        const label = id < 26 ? String.fromCharCode(65 + id) : id;
-        setPracticeError(`Wrong move! ${activeAlgorithm.name} wouldn't visit node ${label} next.`);
-      }
-      return;
+  const handlePracticeClick = (id) => {
+    if (isPracticeComplete) return;
+    if (id === expectedClicks[practiceStep].nodeId) {
+      setPracticeStep(s => s + 1);
+      setPracticeError(null);
+    } else {
+      setPracticeError(`Wrong move! ${activeAlgorithm.name} wouldn't visit node ${nodeLabel(id)} next.`);
     }
-    
-    // Watch mode dragging
-    setDraggingNodeId(id);
   };
 
-  const handleMouseMove = (e) => {
-    if (draggingNodeId === null || !svgRef.current) return;
-    const rect = svgRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    setGraphData(prev => ({
-      ...prev,
-      nodes: prev.nodes.map(n => n.id === draggingNodeId ? { ...n, x, y } : n)
-    }));
-  };
+  const issues = validateGraph(graph, activeAlgorithm.id, startNodeId, directed);
+  const editable = mode === 'watch';
+  const toolHint = TOOLS.find(t => t.value === tool)?.hint;
 
-  const handleMouseUp = () => setDraggingNodeId(null);
-
-  if (!snapshot && graphData.nodes.length > 0) return <div style={{minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>Loading...</div>;
-
-  const isNodeVisited = (id) => currentDisplay?.visitedNodes?.includes(id);
-  const isNodeActive = (id) => currentDisplay?.activeNodes?.includes(id);
-  const isEdgeActive = (id) => currentDisplay?.activeEdges?.includes(id);
-  const isEdgeVisited = (id) => currentDisplay?.visitedEdges?.includes(id);
-
-  const getLabel = (id) => id < 26 ? String.fromCharCode(65 + id) : id.toString();
+  const selectedNode = selection?.type === 'node' ? graph.nodes.find(n => n.id === selection.id) : null;
+  const selectedEdge = selection?.type === 'edge' ? graph.edges.find(e => e.id === selection.id) : null;
 
   return (
-    <div className="sorting-view" style={{ position: 'relative', display: 'flex', width: '100%', minHeight: '100%', alignItems: 'stretch' }}>
-      
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1.5rem', overflow: 'visible', position: 'relative' }}>
-        
-        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem', background: 'white', padding: '4px', borderRadius: '999px', border: '1px solid var(--border-color)', width: 'fit-content', flexWrap: 'wrap' }}>
-           <button 
-             onClick={() => handleModeChange('watch')}
-             style={{ padding: '0.4rem 1.2rem', borderRadius: '999px', border: 'none', background: mode === 'watch' ? 'var(--accent-yellow)' : 'transparent', fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}
-           >
-             watch
-           </button>
-           <button 
-             onClick={() => handleModeChange('practice')}
-             style={{ padding: '0.4rem 1.2rem', borderRadius: '999px', border: 'none', background: mode === 'practice' ? 'var(--accent-yellow)' : 'transparent', fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}
-           >
-             practice it yourself
-           </button>
-           <div style={{ width: '1px', height: '20px', background: 'var(--border-color)', margin: '0 8px' }}></div>
-           <button 
-             onClick={() => setShowConfigModal(true)}
-             style={{ padding: '0.4rem 1.2rem', borderRadius: '999px', border: 'none', background: 'transparent', fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif', color: 'var(--text-muted)' }}
-           >
-             - configure graph manually
-           </button>
-        </div>
-
-        <div className="card-box" style={{ display: 'flex', justifyContent: 'center', minHeight: '400px', overflow: 'hidden', padding: 0 }}>
-          <svg 
-            ref={svgRef}
-            width="100%" 
-            height="100%" 
-            viewBox={`0 0 ${CANVAS_WIDTH} ${CANVAS_HEIGHT}`}
-            onMouseMove={handleMouseMove} onMouseUp={handleMouseUp} onMouseLeave={handleMouseUp}
-            style={{ backgroundColor: 'white', borderRadius: 'var(--radius-md)', minHeight: '400px' }}
-          >
-            <defs>
-              <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="28" refY="3.5" orient="auto">
-                <polygon points="0 0, 10 3.5, 0 7" fill="#888" />
-              </marker>
-              <marker id="arrowhead-active" markerWidth="10" markerHeight="7" refX="28" refY="3.5" orient="auto">
-                <polygon points="0 0, 10 3.5, 0 7" fill="var(--accent-pink)" />
-              </marker>
-            </defs>
-
-            {graphData.edges.map(edge => {
-              const sourceNode = graphData.nodes.find(n => n.id === edge.source);
-              const targetNode = graphData.nodes.find(n => n.id === edge.target);
-              if (!sourceNode || !targetNode) return null;
-
-              const active = isEdgeActive(edge.id);
-              const visited = isEdgeVisited(edge.id);
-              
-              let strokeColor = '#ddd';
-              let strokeWidth = 2;
-              let marker = isDirected ? "url(#arrowhead)" : "";
-
-              if (active) { strokeColor = 'var(--accent-pink)'; strokeWidth = 3; marker = isDirected ? "url(#arrowhead-active)" : ""; }
-              else if (visited) { strokeColor = '#888'; strokeWidth = 3; }
-
-              const midX = (sourceNode.x + targetNode.x) / 2;
-              const midY = (sourceNode.y + targetNode.y) / 2;
-
-              return (
-                <g key={edge.id}>
-                  <line 
-                    x1={sourceNode.x} y1={sourceNode.y} 
-                    x2={targetNode.x} y2={targetNode.y} 
-                    stroke={strokeColor} strokeWidth={strokeWidth} 
-                    markerEnd={marker}
-                  />
-                  {isWeighted && edge.weight !== undefined && (
-                    <g transform={`translate(${midX}, ${midY})`}>
-                      <rect x="-12" y="-10" width="24" height="20" fill="white" rx="4" />
-                      <text textAnchor="middle" dy="4" fontSize="12" fontFamily="JetBrains Mono, monospace" fill="#666" fontWeight="bold">
-                        {edge.weight}
-                      </text>
-                    </g>
-                  )}
-                </g>
-              );
-            })}
-
-            {graphData.nodes.map(node => {
-              const isStart = node.id === inputData.startNodeId;
-              const visited = isNodeVisited(node.id);
-              const active = isNodeActive(node.id);
-              
-              let bgColor = 'white';
-              let borderColor = '#ccc';
-              
-              if (active) { bgColor = '#fff1ed'; borderColor = 'var(--accent-pink)'; }
-              else if (visited) { bgColor = '#f0f0f0'; borderColor = '#888'; }
-              if (isStart) { borderColor = 'var(--accent-pink)'; }
-
-              return (
-                <g 
-                  key={node.id} 
-                  transform={`translate(${node.x}, ${node.y})`} 
-                  onMouseDown={(e) => handleNodeMouseDown(node.id, e)}
-                  style={{ cursor: mode === 'practice' ? 'pointer' : 'grab' }}
-                >
-                  <circle r={NODE_RADIUS} fill={bgColor} stroke={borderColor} strokeWidth="3" />
-                  <text textAnchor="middle" dy="5" fontSize="14" fontFamily="Inter, sans-serif" fontWeight="600" fill="#333">
-                    {getLabel(node.id)}
-                  </text>
-                </g>
-              );
-            })}
-          </svg>
-        </div>
-
-        {mode === 'watch' && <PlaybackControls playback={playback} activeAlgorithm={activeAlgorithm} />}
-        
-        <div className="operations-log card-box">
-          <div className="log-header">
-             <span className="mono-text bold">operations log</span>
-             <div className="log-stats">
-               <span>visited nodes {currentDisplay?.visitedNodes?.length || 0}</span>
-             </div>
-          </div>
-          <span className="log-message">
-            {mode === 'watch' ? (currentDisplay?.message || "press play to begin observation -") : "Practice Mode Active. Distance table auto-updates on correct picks."}
-          </span>
-        </div>
-
-        {showConfigModal && (
-          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.4)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-             <div style={{ background: 'white', padding: '2rem', borderRadius: '16px', width: '90%', maxWidth: '500px', boxShadow: 'var(--ink-shadow-lg)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
-                  <h3 style={{ margin: 0, fontFamily: 'Inter, sans-serif' }}>Configure Graph Manually</h3>
-                  <button onClick={() => setShowConfigModal(false)} style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}><X size={20}/></button>
-                </div>
-                
-                <div style={{ marginBottom: '1rem' }}>
-                  <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, marginBottom: '0.5rem' }}>Number of Nodes (Max 26):</label>
-                  <input type="number" min="1" max="26" value={configNodes} onChange={e => setConfigNodes(parseInt(e.target.value) || 1)} style={{ width: '100%', padding: '0.6rem', borderRadius: '6px', border: '1px solid var(--border-color)', fontFamily: 'Inter, sans-serif' }} />
-                </div>
-                
-                <div style={{ marginBottom: '1.5rem' }}>
-                  <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, marginBottom: '0.5rem' }}>
-                    Edges {isWeighted ? "(Format: Source-Target-Weight)" : "(Format: Source-Target)"}
-                  </label>
-                  <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.5rem', marginTop: 0 }}>
-                    Enter one edge per line. Example: {isWeighted ? "A-B-5 or A, B, 5" : "A-B or A, B"}
-                  </p>
-                  <textarea 
-                    rows={8} 
-                    value={configEdges} 
-                    onChange={e => setConfigEdges(e.target.value)} 
-                    style={{ width: '100%', padding: '0.6rem', borderRadius: '6px', border: '1px solid var(--border-color)', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.9rem', resize: 'vertical' }} 
-                  />
-                </div>
-                
-                <div style={{ display: 'flex', gap: '1rem' }}>
-                  <button 
-                    onClick={() => setShowConfigModal(false)}
-                    style={{ flex: 1, padding: '0.8rem', background: '#f0f0f0', color: '#333', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}
-                  >
-                    Cancel
-                  </button>
-                  <button 
-                    onClick={applyConfig}
-                    style={{ flex: 1, padding: '0.8rem', background: 'var(--accent-pink)', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}
-                  >
-                    Render Graph
-                  </button>
-                </div>
-             </div>
+    <>
+      <div className="view-toolbar">
+        <SegmentedControl options={MODES} value={mode} onChange={handleModeChange} ariaLabel="Mode" />
+        {editable && (
+          <div className="view-toolbar__group">
+            <select className="text-input text-input--select" value="" onChange={e => handlePreset(e.target.value)} aria-label="Load a preset graph">
+              <option value="" disabled>Load preset…</option>
+              {PRESETS.map(p => <option key={p.id} value={p.id}>{p.label}{p.hint ? ` — ${p.hint}` : ''}</option>)}
+            </select>
+            <button className="btn btn--sm" onClick={() => replaceGraph(randomGraph())}><Shuffle size={14} /> random</button>
+            <button className="btn btn--sm" onClick={() => { replaceGraph(emptyGraph()); setTool('node'); }}><Trash2 size={14} /> clear</button>
+            <button className="btn btn--sm" onClick={() => setShowTextEditor(true)}><FileText size={14} /> edit as text</button>
           </div>
         )}
+      </div>
+
+      <section className="stage">
+        <div className="stage__header">
+          {editable ? (
+            <div className="graph-tools">
+              <SegmentedControl options={TOOLS} value={tool} onChange={setTool} ariaLabel="Editing tool" />
+              <label className={`switch ${traits.forcedDirected !== null ? 'is-locked' : ''}`} title={traits.forcedDirected !== null ? `${activeAlgorithm.name} requires ${traits.forcedDirected ? 'a directed' : 'an undirected'} graph` : 'Treat edges as one-way'}>
+                <input
+                  type="checkbox"
+                  checked={directed}
+                  disabled={traits.forcedDirected !== null}
+                  onChange={e => setUserDirected(e.target.checked)}
+                />
+                <span className="switch__track" />
+                directed
+              </label>
+            </div>
+          ) : (
+            <span className="status-pill">
+              VISIT <strong>{Math.min(practiceStep, expectedClicks.length)} / {expectedClicks.length}</strong>
+              {isPracticeComplete ? <span className="tag tag--done">done</span> : <span className="tag">your turn</span>}
+            </span>
+          )}
+
+          {editable && selectedNode && (
+            <div className="inspector">
+              <span className="inspector__title">Node {nodeLabel(selectedNode.id)}</span>
+              {traits.usesStart && (
+                <button className="btn btn--sm" disabled={selectedNode.id === startNodeId} onClick={() => setStartChoice(selectedNode.id)}>
+                  <Flag size={13} /> {selectedNode.id === startNodeId ? 'start node' : 'set as start'}
+                </button>
+              )}
+              <button className="btn btn--sm" onClick={() => { setGraph(g => removeNode(g, selectedNode.id)); setSelection(null); }}>
+                <Trash2 size={13} /> delete
+              </button>
+            </div>
+          )}
+          {editable && selectedEdge && (
+            <div className="inspector">
+              <span className="inspector__title">
+                Edge {nodeLabel(selectedEdge.source)}{directed ? '→' : '–'}{nodeLabel(selectedEdge.target)}
+              </span>
+              {traits.weighted && (
+                <label className="inspector__field">
+                  weight
+                  <WeightInput key={selectedEdge.id} edge={selectedEdge} onCommit={w => setGraph(g => setEdgeWeight(g, selectedEdge.id, w))} />
+                </label>
+              )}
+              <button className="btn btn--sm" onClick={() => { setGraph(g => removeEdge(g, selectedEdge.id)); setSelection(null); }}>
+                <Trash2 size={13} /> delete
+              </button>
+            </div>
+          )}
+        </div>
+
+        <GraphCanvas
+          graph={graph}
+          directed={directed}
+          weighted={traits.weighted}
+          startNodeId={traits.usesStart ? startNodeId : null}
+          display={display}
+          editable={editable}
+          tool={tool}
+          selection={selection}
+          onSelect={setSelection}
+          onChange={handleCanvasChange}
+          onNodeActivate={handlePracticeClick}
+          emptyHint={tool === 'node' ? 'Click anywhere to add a node' : 'Empty graph: pick a preset or use the Node tool'}
+        />
+
+        {editable && issues.length > 0 && (
+          <ul className="graph-issues">
+            {issues.map(issue => (
+              <li key={issue.text} className={`graph-issue graph-issue--${issue.level}`}>
+                {issue.level === 'warn' ? <AlertTriangle size={15} /> : <Info size={15} />}
+                {issue.text}
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {mode === 'practice' && practiceError && (
+          <div className="practice-feedback practice-feedback--error" role="alert">
+            <Info size={18} style={{ flexShrink: 0, marginTop: 1 }} />
+            <span>{practiceError}</span>
+          </div>
+        )}
+        {mode === 'practice' && isPracticeComplete && expectedClicks.length > 0 && (
+          <div className="practice-feedback practice-feedback--success" role="status">
+            <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <CheckCircle2 size={18} /> Done! You visited every reachable node in {activeAlgorithm.name} order.
+            </span>
+            <button className="btn btn--sm" onClick={() => { setPracticeStep(0); setPracticeError(null); }}>try again</button>
+          </div>
+        )}
+
+        <div className="stage__footer">
+          <Legend items={LEGEND} />
+          {editable && <span className="stage__hint">{toolHint} {graph.nodes.length}/{MAX_NODES} nodes.</span>}
+        </div>
 
         {mode === 'practice' && showTutorial && (
-          <div onClick={() => setShowTutorial(false)} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(2px)', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-            <div style={{ background: 'white', padding: '2rem 3rem', borderRadius: '16px', boxShadow: 'var(--ink-shadow-lg)', border: '1px solid var(--border-color)', textAlign: 'center' }}>
-              <p style={{ fontFamily: 'Inter, sans-serif', fontWeight: 600, color: 'var(--text-color)', marginBottom: '0.5rem' }}>
-                Click the unvisited node {activeAlgorithm.name} should explore next!
-              </p>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>click anywhere to start</p>
+          <div className="stage-overlay" onClick={() => setShowTutorial(false)}>
+            <div className="stage-overlay__card">
+              <p>Click the unvisited node {activeAlgorithm.name} should explore next</p>
+              <p>click anywhere to start</p>
             </div>
           </div>
         )}
+      </section>
 
-        {practiceError && (
-          <div style={{ position: 'fixed', bottom: '2rem', right: '2rem', background: 'white', border: '2px solid var(--accent-pink)', padding: '1rem', borderRadius: '12px', boxShadow: 'var(--ink-shadow-lg)', maxWidth: '300px', zIndex: 100, display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-            <Info color="var(--accent-pink)" size={24} style={{ flexShrink: 0 }} />
-            <div>
-              <p style={{ margin: 0, fontFamily: 'Inter, sans-serif', fontSize: '0.95rem', color: 'var(--text-color)', lineHeight: 1.4 }}>
-                {practiceError}
-              </p>
-            </div>
-          </div>
-        )}
+      {mode === 'watch' && hasGraph && <PlaybackControls playback={playback} activeAlgorithm={activeAlgorithm} />}
 
-      </div>
+      {mode === 'watch' ? (
+        <OperationsLog
+          snapshots={hasGraph ? snapshots : []}
+          currentIndex={currentIndex}
+          stats={[{ label: 'visited nodes', value: display?.visitedNodes?.length || 0 }]}
+        />
+      ) : (
+        <OperationsLog>
+          <span className="log-message">Practice mode: click nodes in the order {activeAlgorithm.name} visits them.</span>
+        </OperationsLog>
+      )}
+
+      {showTextEditor && (
+        <GraphTextEditor
+          graph={graph}
+          weighted={traits.weighted}
+          directed={directed}
+          onApply={(next) => { replaceGraph(next); setShowTextEditor(false); }}
+          onClose={() => setShowTextEditor(false)}
+        />
+      )}
+
       <ChatbotWidget activeAlgorithm={activeAlgorithm} snapshot={snapshot} offsetRight="2rem" />
-    </div>
+    </>
   );
 }

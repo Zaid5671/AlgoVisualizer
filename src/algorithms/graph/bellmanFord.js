@@ -1,4 +1,5 @@
 import { StepTypes } from '../../engine/stepTypes';
+import { nodeLabel } from '../../utils/nodeLabel';
 
 export function generateBellmanFordSnapshots({ nodes, edges, startNodeId }) {
   const snapshots = [];
@@ -33,25 +34,25 @@ export function generateBellmanFordSnapshots({ nodes, edges, startNodeId }) {
     // We treat undirected edges as two directed edges for Bellman-Ford
     for (const edge of edges) {
       // Forward direction
-      record(StepTypes.COMPARE, [edge.source, edge.target], [edge.id], `Pass ${i}: Relaxing edge from ${edge.source} to ${edge.target} (Weight ${edge.weight})`, 4);
+      record(StepTypes.COMPARE, [edge.source, edge.target], [edge.id], `Pass ${i}: Relaxing edge from ${nodeLabel(edge.source)} to ${nodeLabel(edge.target)} (Weight ${edge.weight})`, 4);
       
       if (distances[edge.source] !== Infinity && distances[edge.source] + edge.weight < distances[edge.target]) {
         distances[edge.target] = distances[edge.source] + edge.weight;
         previousEdge[edge.target] = edge.id;
         visitedNodes.add(edge.target);
         anyChanges = true;
-        record(StepTypes.SWAP, [edge.target], [edge.id], `Updated distance to node ${edge.target} (New Cost: ${distances[edge.target]})`, 5);
+        record(StepTypes.SWAP, [edge.target], [edge.id], `Updated distance to node ${nodeLabel(edge.target)} (New Cost: ${distances[edge.target]})`, 5);
       }
 
       // Backward direction (if undirected)
       if (!edge.isDirected) {
-        record(StepTypes.COMPARE, [edge.target, edge.source], [edge.id], `Pass ${i}: Relaxing edge from ${edge.target} to ${edge.source} (Weight ${edge.weight})`, 4);
+        record(StepTypes.COMPARE, [edge.target, edge.source], [edge.id], `Pass ${i}: Relaxing edge from ${nodeLabel(edge.target)} to ${nodeLabel(edge.source)} (Weight ${edge.weight})`, 4);
         if (distances[edge.target] !== Infinity && distances[edge.target] + edge.weight < distances[edge.source]) {
           distances[edge.source] = distances[edge.target] + edge.weight;
           previousEdge[edge.source] = edge.id;
           visitedNodes.add(edge.source);
           anyChanges = true;
-          record(StepTypes.SWAP, [edge.source], [edge.id], `Updated distance to node ${edge.source} (New Cost: ${distances[edge.source]})`, 5);
+          record(StepTypes.SWAP, [edge.source], [edge.id], `Updated distance to node ${nodeLabel(edge.source)} (New Cost: ${distances[edge.source]})`, 5);
         }
       }
     }
