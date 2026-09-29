@@ -1,0 +1,206 @@
+/* Dialogs and side panels: quiz, complexity chart, About, code tracer, AI tutor. */
+
+/* =========================================================
+   QUIZ
+   ========================================================= */
+.quiz { display: grid; gap: 1rem; padding-bottom: 0.25rem; }
+.quiz__intro { color: var(--ink-dim); }
+.quiz__topics { display: grid; gap: 0.6rem; }
+.quiz-topic {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.95rem 1.1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.quiz-topic:hover { border-color: var(--ink); box-shadow: var(--shadow-sm); }
+.quiz-topic__name { font-weight: 600; font-size: 0.98rem; }
+.quiz__meta { display: flex; justify-content: space-between; gap: 1rem; }
+.quiz__progress { height: 4px; border-radius: 4px; background: var(--surface-muted); overflow: hidden; }
+.quiz__progress span { display: block; height: 100%; background: var(--ink); transition: width 0.25s; }
+.quiz__question { font-size: 1.1rem; font-weight: 700; line-height: 1.45; }
+.quiz__options { display: grid; gap: 0.5rem; }
+.quiz-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.8rem 1rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  text-align: left;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.quiz-option:hover:not(:disabled) { border-color: var(--ink); background: var(--surface-muted); }
+.quiz-option:disabled { cursor: default; }
+.quiz-option svg { flex-shrink: 0; }
+.quiz-option.is-correct { border-color: var(--green); background: var(--green-dim); }
+.quiz-option.is-correct svg { color: var(--green); }
+.quiz-option.is-wrong { border-color: var(--red); background: var(--red-dim); }
+.quiz-option.is-wrong svg { color: var(--red); }
+.quiz-option.is-faded { color: var(--ink-faint); }
+.quiz__explain { display: grid; gap: 0.3rem; padding: 0.85rem 1rem; border-radius: var(--radius-sm); font-size: 0.92rem; animation: fadeIn 0.2s ease-out; }
+.quiz__explain.is-correct { background: var(--green-dim); }
+.quiz__explain.is-correct strong { color: var(--green); }
+.quiz__explain.is-wrong { background: var(--red-dim); }
+.quiz__explain.is-wrong strong { color: var(--red); }
+.quiz--results { justify-items: center; text-align: center; padding: 1rem 0; }
+.quiz--results h4 { font-size: 1.2rem; }
+.quiz--results p { color: var(--ink-dim); max-width: 42ch; }
+.quiz__score {
+  display: grid;
+  place-items: center;
+  width: 128px;
+  height: 128px;
+  border-radius: 50%;
+  background: conic-gradient(var(--green) var(--pct), var(--surface-muted) 0);
+}
+.quiz__score > span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.1rem;
+  width: 104px;
+  height: 104px;
+  border-radius: 50%;
+  background: var(--surface);
+  font-family: var(--font-mono);
+  font-size: 1.9rem;
+  font-weight: 700;
+}
+.quiz__score small { font-size: 0.9rem; color: var(--ink-dim); }
+
+/* =========================================================
+   COMPLEXITY DIALOG
+   ========================================================= */
+.cx-modal { display: grid; gap: 1rem; }
+.cx-chart { margin: 0; display: grid; gap: 0.6rem; }
+.cx-chart svg { width: 100%; height: auto; background: var(--surface-muted); border-radius: var(--radius-sm); }
+.cx-chart figcaption { font-size: 0.9rem; color: var(--ink-dim); }
+.cx-chart figcaption strong { color: var(--ink); font-family: var(--font-mono); }
+.cx-axis { stroke: var(--border-strong); stroke-width: 2; }
+.cx-axis-label { font-size: 12px; fill: var(--ink-dim); }
+.cx-curve { fill: none; stroke: var(--ink-faint); stroke-width: 2; opacity: 0.45; }
+.cx-curve-label { font-size: 12px; fill: var(--ink-faint); font-family: var(--font-mono); }
+.is-active .cx-curve { stroke: var(--pink); stroke-width: 4; opacity: 1; stroke-dasharray: 1500; animation: drawCurve 1.2s ease-out both; }
+.is-active .cx-curve-label { fill: var(--pink); font-weight: 700; }
+@keyframes drawCurve { from { stroke-dashoffset: 1500; } to { stroke-dashoffset: 0; } }
+.cx-modal__desc { padding: 0.85rem 1rem; border-radius: var(--radius-sm); background: var(--surface-muted); font-size: 0.93rem; line-height: 1.6; }
+
+/* =========================================================
+   ABOUT DIALOG
+   ========================================================= */
+.about { display: grid; gap: 0.9rem; line-height: 1.6; font-size: 0.95rem; }
+.about__team { display: grid; gap: 0.6rem; padding-top: 0.9rem; border-top: 1px solid var(--border); }
+.about__team ul { list-style: none; display: flex; flex-wrap: wrap; gap: 0.5rem 1.25rem; }
+.about__team li { display: flex; align-items: center; gap: 0.5rem; font-weight: 600; }
+.about__team img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
+.about__note { color: var(--ink-dim); font-size: 0.85rem; }
+
+/* =========================================================
+   CODE TRACER (right panel)
+   ========================================================= */
+.code-tracer { display: flex; flex-direction: column; gap: 0.75rem; padding: 1.1rem 1rem 1.5rem; min-width: 250px; }
+.code-tracer__header h3 { font-size: 1rem; font-weight: 700; margin-top: 0.15rem; }
+.code-tracer__step { font-size: 0.82rem; color: var(--ink-dim); padding: 0.55rem 0.7rem; border-radius: var(--radius-xs); background: var(--surface-muted); }
+.code-tracer__lines { list-style: none; font-family: var(--font-mono); font-size: 0.8rem; line-height: 1.55; overflow-x: auto; }
+.code-tracer__lines li { display: flex; gap: 0.75rem; padding: 0.1rem 0.5rem; border-left: 3px solid transparent; border-radius: 0 4px 4px 0; white-space: pre; }
+.code-tracer__lines li.is-active { background: var(--yellow-dim); border-left-color: var(--yellow); font-weight: 600; }
+.code-tracer__num { color: var(--ink-faint); user-select: none; min-width: 1.4em; text-align: right; }
+.code-tracer__note { font-size: 0.75rem; color: var(--ink-faint); }
+
+/* =========================================================
+   AI TUTOR
+   ========================================================= */
+.live-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 3px var(--green-dim); }
+.chat-fab {
+  position: fixed;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--pink);
+  color: #fff;
+  box-shadow: var(--shadow-lg);
+  cursor: grab;
+  touch-action: none;
+}
+.chat-fab:hover { background: var(--pink-hover); }
+.chat-window {
+  position: fixed;
+  z-index: 100;
+  display: flex;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-lg);
+}
+.chat-window__inner { flex: 1; min-width: 0; display: flex; flex-direction: column; overflow: hidden; border-radius: var(--radius-md); }
+.chat-window__header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.7rem 0.75rem 0.7rem 1rem;
+  border-bottom: 1px solid var(--border);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+.chat-window__title { display: inline-flex; align-items: center; gap: 0.5rem; font-weight: 700; font-size: 0.92rem; }
+.chat-window__context { margin-right: auto; font-size: 0.78rem; color: var(--ink-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.chat-window__messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 1rem; padding: 1rem; }
+.chat-msg { display: flex; flex-direction: column; gap: 0.25rem; align-items: flex-start; max-width: 92%; }
+.chat-msg--user { align-self: flex-end; align-items: flex-end; }
+.chat-msg__who { font-size: 0.72rem; font-weight: 600; color: var(--ink-faint); }
+.chat-msg__bubble { max-width: 100%; padding: 0.65rem 0.9rem; border-radius: 14px 14px 14px 4px; background: var(--surface-muted); font-size: 0.9rem; line-height: 1.55; overflow-x: auto; }
+.chat-msg--user .chat-msg__bubble { border-radius: 14px 14px 4px 14px; background: var(--ink); color: #fff; }
+.chat-msg.is-error .chat-msg__bubble { background: var(--red-dim); color: var(--red); }
+.chat-msg__about { max-width: 100%; font-size: 0.7rem; color: var(--ink-faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.chat-msg__bubble p + p { margin-top: 0.5rem; }
+.chat-msg__bubble ul, .chat-msg__bubble ol { padding-left: 1.2rem; margin: 0.4rem 0; }
+.chat-msg__bubble code { font-family: var(--font-mono); font-size: 0.82em; background: rgba(0, 0, 0, 0.06); padding: 0.05rem 0.3rem; border-radius: 4px; }
+.chat-msg__bubble pre { overflow-x: auto; margin: 0.4rem 0; }
+.chat-typing { display: flex; gap: 4px; padding: 0.85rem 1rem; }
+.chat-typing span { width: 6px; height: 6px; border-radius: 50%; background: var(--ink-faint); animation: typingDot 1s infinite ease-in-out; }
+.chat-typing span:nth-child(2) { animation-delay: 0.15s; }
+.chat-typing span:nth-child(3) { animation-delay: 0.3s; }
+@keyframes typingDot { 0%, 80%, 100% { opacity: 0.3; transform: none; } 40% { opacity: 1; transform: translateY(-3px); } }
+.chat-window__input { display: flex; gap: 0.5rem; padding: 0.75rem 0.75rem 0.35rem; border-top: 1px solid var(--border); }
+.chat-window__input .text-input { flex: 1; min-width: 0; }
+.chat-window__note { padding: 0 0.9rem 0.6rem; font-size: 0.7rem; color: var(--ink-faint); }
+.chat-resize { position: absolute; z-index: 2; touch-action: none; }
+.chat-resize--top, .chat-resize--bottom { left: 12px; right: 12px; height: 10px; cursor: ns-resize; }
+.chat-resize--left, .chat-resize--right { top: 12px; bottom: 12px; width: 10px; cursor: ew-resize; }
+.chat-resize--top { top: -5px; }
+.chat-resize--bottom { bottom: -5px; }
+.chat-resize--left { left: -5px; }
+.chat-resize--right { right: -5px; }
+.chat-resize--top-left, .chat-resize--top-right, .chat-resize--bottom-left, .chat-resize--bottom-right { width: 16px; height: 16px; }
+.chat-resize--top-left { top: -6px; left: -6px; cursor: nwse-resize; }
+.chat-resize--bottom-right { bottom: -6px; right: -6px; cursor: nwse-resize; }
+.chat-resize--top-right { top: -6px; right: -6px; cursor: nesw-resize; }
+.chat-resize--bottom-left { bottom: -6px; left: -6px; cursor: nesw-resize; }
+
+/* On phones the tutor opens as a bottom sheet instead of a floating window. */
+@media (max-width: 768px) {
+  .chat-window { left: 0; right: 0; bottom: 0; height: 80vh; border-radius: 20px 20px 0 0; }
+  .chat-window__inner { border-radius: 20px 20px 0 0; }
+  .chat-window__header { cursor: default; }
+  .quiz-option, .quiz-topic { padding: 0.75rem 0.85rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .is-active .cx-curve, .chat-typing span { animation: none; }
+}

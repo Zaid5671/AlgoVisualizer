@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { activateOnKey } from '../../utils/keyboard';
 
 // Above this many bars the value labels overlap, so they move to a hover tooltip.
 const DENSE_THRESHOLD = 24;
@@ -32,6 +33,11 @@ export function BarChart({ values, stateOf, markOf, onBarClick, onSwap, labelOf,
             className={`bar-slot ${marks} ${draggedIdx === idx ? 'is-dragging' : ''}`}
             title={isDense ? String(val) : undefined}
             onClick={onBarClick ? () => onBarClick(idx) : undefined}
+            role={onBarClick ? 'button' : undefined}
+            tabIndex={onBarClick ? 0 : undefined}
+            aria-label={onBarClick ? `position ${idx}, value ${val}` : undefined}
+            aria-pressed={onBarClick ? marks.includes('selected') : undefined}
+            onKeyDown={onBarClick ? activateOnKey(() => onBarClick(idx)) : undefined}
             draggable={Boolean(onSwap)}
             onDragStart={onSwap ? (e) => { setDraggedIdx(idx); e.dataTransfer.effectAllowed = 'move'; } : undefined}
             onDragOver={onSwap ? (e) => e.preventDefault() : undefined}

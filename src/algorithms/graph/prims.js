@@ -1,7 +1,7 @@
 import { StepTypes } from '../../engine/stepTypes';
 import { nodeLabel } from '../../utils/nodeLabel';
 
-export function generatePrimsSnapshots({ nodes, edges, startNodeId }) {
+export function generatePrimsSnapshots({ edges, startNodeId }) {
   const snapshots = [];
   const visitedNodes = new Set();
   const visitedEdges = [];
@@ -24,7 +24,6 @@ export function generatePrimsSnapshots({ nodes, edges, startNodeId }) {
   let totalCost = 0;
 
   // We need to loop until all nodes in the connected component are visited
-  let edgesAdded = 0;
   // Actually, we should just loop until we can't find any valid edges
   
   while (true) {

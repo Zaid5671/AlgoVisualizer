@@ -161,7 +161,7 @@ export function SortingView({ activeAlgorithm, onStep, initialMode = 'watch' }) 
         />
       )}
 
-      <ChatbotWidget activeAlgorithm={activeAlgorithm} snapshot={snapshot} offsetRight="2rem" />
+      <ChatbotWidget activeAlgorithm={activeAlgorithm} snapshot={snapshot} />
     </>
   );
 }

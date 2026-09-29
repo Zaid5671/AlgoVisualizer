@@ -1,7 +1,7 @@
 import { StepTypes } from '../../engine/stepTypes';
 import { nodeLabel } from '../../utils/nodeLabel';
 
-export function generateDFSGraphSnapshots({ nodes, edges, startNodeId }) {
+export function generateDFSGraphSnapshots({ edges, startNodeId }) {
   const snapshots = [];
   const visitedNodes = [];
   const visitedEdges = [];

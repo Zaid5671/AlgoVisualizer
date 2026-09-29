@@ -1,5 +1,7 @@
 import { useState } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu } from "lucide-react";
+import { Modal } from './ui/Modal';
+import { TEAM } from '../data/site';
 import spitLogo from '../assets/spit_logo.png';
 import { useNavigate } from 'react-router-dom';
 
@@ -60,7 +62,7 @@ export function Sidebar({ activeKey, onSelect, algorithms, isOpen, onToggle, onO
             </div>
 
             <div className="sidebar-section">
-              <h3 className="sidebar-label">Pick a specimen</h3>
+              <h3 className="sidebar-label">Pick an algorithm</h3>
               <div className="specimen-list">
                 {filteredAlgoKeys.map((key, idx) => {
                   const isActive = activeKey === key;
@@ -85,7 +87,7 @@ export function Sidebar({ activeKey, onSelect, algorithms, isOpen, onToggle, onO
               <span aria-hidden="true">&rarr;</span>
             </button>
             <button className="sidebar-link" onClick={() => setIsAboutOpen(true)}>
-              <span>Why I built this</span>
+              <span>About this project</span>
               <span aria-hidden="true">?</span>
             </button>
           </div>
@@ -105,67 +107,28 @@ export function Sidebar({ activeKey, onSelect, algorithms, isOpen, onToggle, onO
         </div>
       )}
 
-      {/* ABOUT MODAL */}
       {isAboutOpen && (
-        <div style={{
-          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(4px)',
-          zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center'
-        }}>
-          <div style={{
-            background: '#ffffff',
-            border: '1px solid var(--border-color)',
-            borderRadius: '16px',
-            width: '100%', maxWidth: '600px',
-            boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
-            position: 'relative',
-            padding: '3rem',
-            fontFamily: 'Inter, sans-serif'
-          }}>
-            <button 
-              onClick={() => setIsAboutOpen(false)}
-              style={{
-                position: 'absolute', top: '1.5rem', right: '1.5rem',
-                background: 'white', border: '1px solid #efefef', borderRadius: '50%',
-                width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer', boxShadow: '0 2px 5px rgba(0,0,0,0.05)'
-              }}
-            >
-              <X size={18} />
-            </button>
-
-            <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
-              <span className="mono-text" style={{ color: 'var(--text-muted)' }}>SYS // ORIGIN_STORY</span>
-              <h2 style={{ fontSize: '2rem', marginTop: '0.5rem', marginBottom: '1rem' }}>why I built this</h2>
-              <div style={{ width: '40px', height: '3px', background: 'var(--accent-yellow)', margin: '0 auto' }}></div>
-            </div>
-
-            <div style={{ color: 'var(--text-color)', lineHeight: 1.6, fontSize: '1.05rem', display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
-              <p>
-                I've always found algorithms easier to understand when I can <span style={{ background: '#fffaf0', borderBottom: '2px solid var(--accent-yellow)', padding: '0 4px', fontWeight: 600 }}>see what's actually happening</span>, not just read the theory.
-              </p>
-              <p>
-                <strong>Specimen</strong> started from that idea: a small space to slow algorithms down, step through every decision, and make the logic feel a little less intimidating.
-              </p>
-              <p>
-                I built this to make DSA more visual, interactive, and fun to explore — whether you're learning from scratch, preparing for interviews, or just curious about how an algorithm works.
-              </p>
-              
-              <blockquote style={{ 
-                margin: '1rem 0 0 0', padding: '1.5rem', 
-                background: '#fafafa', borderLeft: '4px solid var(--accent-yellow)',
-                borderRadius: '0 8px 8px 0', fontStyle: 'italic'
-              }}>
-                <p style={{ margin: 0 }}>
-                  Hopefully, it helps you <strong>understand algorithms</strong> instead of just memorizing them.
-                </p>
-                <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
-                  — Built by a fellow engineer
-                </p>
-              </blockquote>
+        <Modal title="About this project" onClose={() => setIsAboutOpen(false)} width={560}>
+          <div className="about">
+            <p>
+              Algorithms are easier to understand when you can <strong>see what is happening</strong>, not just read the theory.
+              This app slows each algorithm down so you can follow every decision it makes.
+            </p>
+            <p>
+              Watch mode shows the algorithm step by step. Practice mode lets you make those decisions yourself and explains any mistakes,
+              so you <strong>understand</strong> an algorithm instead of memorising it.
+            </p>
+            <div className="about__team">
+              <span className="eyebrow">Built by</span>
+              <ul>
+                {TEAM.map(member => (
+                  <li key={member.name}><img src={member.photo} alt="" width="32" height="32" />{member.name}</li>
+                ))}
+              </ul>
+              <p className="about__note">A mini-project by students of SPIT.</p>
             </div>
           </div>
-        </div>
+        </Modal>
       )}
     </div>
   );

@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 
 /**
  * Square-cell grid for pathfinding.
@@ -15,6 +15,24 @@ export function PathGrid({ grid, start, target, stateOf, labelOf, onPaintStart, 
   const paintingRef = useRef(false);
   const lastRef = useRef(null);
   const cols = grid[0]?.length || 0;
+  const rows = grid.length;
+  // Keyboard: one tab stop for the whole grid; arrow keys move between cells, Enter or Space picks one.
+  const [focus, setFocus] = useState({ r: start.row, c: start.col });
+  const gridRef = useRef(null);
+
+  const handleKeyDown = (e) => {
+    const moves = { ArrowUp: [-1, 0], ArrowDown: [1, 0], ArrowLeft: [0, -1], ArrowRight: [0, 1] };
+    if (moves[e.key]) {
+      e.preventDefault();
+      const r = Math.max(0, Math.min(rows - 1, focus.r + moves[e.key][0]));
+      const c = Math.max(0, Math.min(cols - 1, focus.c + moves[e.key][1]));
+      setFocus({ r, c });
+      gridRef.current?.querySelector(`[data-cell="${r},${c}"]`)?.focus();
+    } else if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onCellClick(focus.r, focus.c);
+    }
+  };
 
   const cellFromPoint = (x, y) => {
     const el = document.elementFromPoint(x, y)?.closest?.('[data-cell]');
@@ -57,6 +75,10 @@ export function PathGrid({ grid, start, target, stateOf, labelOf, onPaintStart, 
 
   return (
     <div
+      ref={gridRef}
+      role={onCellClick ? 'grid' : undefined}
+      aria-label={onCellClick ? 'Grid: use the arrow keys to move, Enter to choose a cell' : undefined}
+      onKeyDown={onCellClick ? handleKeyDown : undefined}
       className={`path-grid ${size === 'lg' ? 'path-grid--lg' : ''} ${onCellClick ? 'is-clickable' : ''}`}
       style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
       onPointerDown={handlePointerDown}
@@ -71,7 +93,17 @@ export function PathGrid({ grid, start, target, stateOf, labelOf, onPaintStart, 
         const extra = stateOf ? stateOf(row, col) : '';
         const label = labelOf ? labelOf(row, col) : null;
         return (
-          <div key={`${row},${col}`} data-cell={`${row},${col}`} className={`path-cell ${base} ${extra}`}>
+          <div
+            key={`${row},${col}`}
+            data-cell={`${row},${col}`}
+            className={`path-cell ${base} ${extra}`}
+            {...(onCellClick ? {
+              role: 'gridcell',
+              tabIndex: focus.r === row && focus.c === col ? 0 : -1,
+              'aria-label': `row ${row}, column ${col}${isStart ? ', start' : isTarget ? ', target' : isWall ? ', wall' : ''}${extra ? `, ${extra.trim()}` : ''}${label !== null && label !== undefined ? `, ${label}` : ''}`,
+              onFocus: () => setFocus({ r: row, c: col }),
+            } : {})}
+          >
             {isStart && <span className="path-cell__icon" aria-label="start">S</span>}
             {isTarget && <span className="path-cell__icon" aria-label="target">T</span>}
             {!isStart && !isTarget && label !== null && label !== undefined && <span className="path-cell__label">{label}</span>}
