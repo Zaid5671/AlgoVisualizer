@@ -9,11 +9,18 @@ import { LandingPage } from './views/LandingPage';
 import { ALGORITHMS } from './data/algorithms';
 import { CodeTracer } from './components/CodeTracer';
 import { ResizeHandle } from './components/ResizeHandle';
-import { PanelRightClose, PanelRightOpen, Code2, Menu } from 'lucide-react';
+import { Code2, Menu } from 'lucide-react';
 import { AlgorithmInfo } from './components/AlgorithmInfo';
 import { ComplexityModal } from './components/ComplexityModal';
 import { QuizModal } from './components/QuizModal';
 import './index.css';
+
+const COMPLEXITY_FIELDS = [
+  { key: 'best', label: 'BEST', title: 'Best Case' },
+  { key: 'avg', label: 'AVG', title: 'Average Case' },
+  { key: 'worst', label: 'WORST', title: 'Worst Case' },
+  { key: 'space', label: 'SPACE', title: 'Space Complexity' },
+];
 
 function AlgorithmLayout() {
   const location = useLocation();
@@ -27,7 +34,8 @@ function AlgorithmLayout() {
           'bubbleSort';
 
   const [activeAlgorithmKey, setActiveAlgorithmKey] = useState(initialAlgo);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  // On phones the sidebar is an overlay drawer, so start with it closed.
+  const [isSidebarOpen, setIsSidebarOpen] = useState(() => window.innerWidth > 768);
 
   // Right Sidebar State
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false);
@@ -52,7 +60,7 @@ function AlgorithmLayout() {
         <button onClick={() => setIsSidebarOpen(true)} className="mobile-menu-btn">
           <Menu size={24} />
         </button>
-        <span className="mono-text bold">SPIT ALGO VISUALIZER</span>
+        <span className="mono-text bold">SPIT Algo Visualizer</span>
       </div>
 
       <Sidebar
@@ -71,57 +79,45 @@ function AlgorithmLayout() {
       {isSidebarOpen && <div className="sidebar-backdrop" onClick={() => setIsSidebarOpen(false)}></div>}
 
       <main className="main-content">
-        <div className="header-row">
-          <div className="header-left card-box">
-            <span className="mono-text breadcrumbs">SPECIMEN / {activeAlgorithm.category.toUpperCase()}</span>
-            <h1>{activeAlgorithm.name}</h1>
-            <p className="description">{activeAlgorithm.description}</p>
-          </div>
-          <div className="header-right-col">
-            <div className="complexity-box card-box" style={{ padding: '1rem 1.25rem', gap: '0.75rem' }}>
-              <div className="comp-col" onClick={() => openModal('Best Case', 'best')} style={{ padding: '0.4rem 0.8rem', border: '1px solid #e0d4bc', borderRadius: '8px', cursor: 'pointer', backgroundColor: '#ffffff', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent-yellow)'; e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.05)'; }} onMouseLeave={e => { e.currentTarget.style.borderColor = '#e0d4bc'; e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; }}>
-                <span className="label">BEST</span>
-                <span className="value">{activeAlgorithm.complexity.best}</span>
-              </div>
-              <div className="comp-col" onClick={() => openModal('Average Case', 'avg')} style={{ padding: '0.4rem 0.8rem', border: '1px solid #e0d4bc', borderRadius: '8px', cursor: 'pointer', backgroundColor: '#ffffff', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent-yellow)'; e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.05)'; }} onMouseLeave={e => { e.currentTarget.style.borderColor = '#e0d4bc'; e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; }}>
-                <span className="label">AVG</span>
-                <span className="value">{activeAlgorithm.complexity.avg}</span>
-              </div>
-              <div className="comp-col" onClick={() => openModal('Worst Case', 'worst')} style={{ padding: '0.4rem 0.8rem', border: '1px solid #e0d4bc', borderRadius: '8px', cursor: 'pointer', backgroundColor: '#ffffff', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent-yellow)'; e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.05)'; }} onMouseLeave={e => { e.currentTarget.style.borderColor = '#e0d4bc'; e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; }}>
-                <span className="label">WORST</span>
-                <span className="value">{activeAlgorithm.complexity.worst}</span>
-              </div>
-              <div className="comp-col" onClick={() => openModal('Space Complexity', 'space')} style={{ padding: '0.4rem 0.8rem', border: '1px solid #e0d4bc', borderRadius: '8px', cursor: 'pointer', backgroundColor: '#ffffff', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent-yellow)'; e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.05)'; }} onMouseLeave={e => { e.currentTarget.style.borderColor = '#e0d4bc'; e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; }}>
-                <span className="label">SPACE</span>
-                <span className="value">{activeAlgorithm.complexity.space}</span>
-              </div>
+        <div className="page">
+          <header className="algo-header">
+            <div className="algo-header__text">
+              <span className="eyebrow breadcrumbs">specimen / {activeAlgorithm.category}</span>
+              <h1>{activeAlgorithm.name}</h1>
+              <p className="algo-header__desc">{activeAlgorithm.description}</p>
             </div>
+            <div className="algo-header__side">
+              <div className="complexity-strip" aria-label="Complexity (click for details)">
+                {COMPLEXITY_FIELDS.map(({ key, label, title }) => (
+                  <button key={key} className="complexity-item" onClick={() => openModal(title, key)} title={`${title}: click for details`}>
+                    <span className="complexity-item__label">{label}</span>
+                    <span className="complexity-item__value">{activeAlgorithm.complexity[key]}</span>
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={() => setIsRightSidebarOpen(!isRightSidebarOpen)}
+                className={`btn code-toggle-btn ${isRightSidebarOpen ? 'active' : ''}`}
+                title="Toggle code tracer"
+              >
+                <Code2 size={16} />
+                <span className="code-toggle-text">Code</span>
+              </button>
+            </div>
+          </header>
 
-            {/* Toggle for right sidebar */}
-            <button
-              onClick={() => setIsRightSidebarOpen(!isRightSidebarOpen)}
-              className="card-box code-toggle-btn"
-              title="Toggle Code Tracer"
-            >
-              <Code2 size={20} />
-              <span className="code-toggle-text">Code</span>
-            </button>
-          </div>
+          {activeAlgorithm.category === 'Pathfinding' ? (
+            <PathfindingView activeAlgorithm={activeAlgorithm} onStep={setCurrentSnapshot} />
+          ) : activeAlgorithm.category === 'Graph' ? (
+            <GraphView activeAlgorithm={activeAlgorithm} onStep={setCurrentSnapshot} />
+          ) : activeAlgorithm.category === 'Backtracking' ? (
+            <BacktrackingView activeAlgorithm={activeAlgorithm} onStep={setCurrentSnapshot} />
+          ) : (
+            <SortingView activeAlgorithm={activeAlgorithm} onStep={setCurrentSnapshot} />
+          )}
+
+          <AlgorithmInfo activeAlgorithm={activeAlgorithm} />
         </div>
-
-        <div className="card-box" style={{ marginBottom: '1rem' }}><AlgorithmInfo activeAlgorithm={activeAlgorithm} /></div>
-
-        {activeAlgorithm.category === 'Pathfinding' ? (
-          <PathfindingView activeAlgorithm={activeAlgorithm} onStep={setCurrentSnapshot} />
-        ) : activeAlgorithm.category === 'Graph' ? (
-          <GraphView activeAlgorithm={activeAlgorithm} onStep={setCurrentSnapshot} />
-        ) : activeAlgorithm.category === 'Backtracking' ? (
-          <BacktrackingView activeAlgorithm={activeAlgorithm} onStep={setCurrentSnapshot} />
-        ) : (
-          <SortingView activeAlgorithm={activeAlgorithm} onStep={setCurrentSnapshot} />
-        )}
-
-        <div style={{ minHeight: '1.7rem', flexShrink: 0 }}></div>
       </main>
 
       {isQuizOpen && <QuizModal onClose={() => setIsQuizOpen(false)} />}
@@ -160,4 +156,3 @@ function App() {
 
 export default App;
 
-// Trigger HMR
