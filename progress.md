@@ -123,7 +123,7 @@ To run the tests against the Vite dev server, temporarily change `baseURL` in `p
 - **Fixed:** Quick Sort logged "Partitioning array from index 0 to -1" for empty ranges.
 - **Checks:** 18 Playwright tests pass, including a new deep-link test. Build is clean, lint is clean for the new files, and there is no horizontal scroll at 390px.
 
-### Step 5 — Polish (merge and deploy still to do)
+### Step 5 — Polish (`8796629`, `fb1d3b2`; merge and deploy still to do)
 - **Restyled** onto the shared `Modal` and design tokens (`src/styles/panels.css`):
   - Quiz: topic list, progress bar, green/red answers with icons and an explanation, score ring, Try again.
   - Complexity dialog: plain axis labels ("input size", "work done") and a one-line meaning for each growth class.
