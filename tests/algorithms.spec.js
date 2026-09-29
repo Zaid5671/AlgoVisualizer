@@ -114,6 +114,7 @@ test.describe('Algorithm Visualizer E2E', () => {
     await expect(cell).toHaveClass(/is-wall/);
 
     const scrubber = page.locator('.playback__scrubber input[type="range"]');
+    await expect(scrubber).not.toHaveAttribute('max', '0');
     const max = await scrubber.getAttribute('max');
     await scrubber.fill(max);
     await expect(page.locator('.path-grid .path-cell.path').first()).toBeVisible();
@@ -219,6 +220,7 @@ test.describe('Algorithm Visualizer E2E', () => {
   test('Backtracking - N-Queens watch mode solves the board', async ({ page }) => {
     await page.goto('/algorithm?category=backtracking');
     const scrubber = page.locator('.playback__scrubber input[type="range"]');
+    await expect(scrubber).not.toHaveAttribute('max', '0'); // steps are generated just after the first render
     await scrubber.fill(await scrubber.getAttribute('max'));
     await expect(page.locator('.queens-board .queens-cell__queen')).toHaveCount(8);
     await expect(page.locator('.log-stats')).toContainText('backtracks');
@@ -364,5 +366,40 @@ test.describe('Algorithm Visualizer E2E', () => {
     await page.goto('/algorithm?category=backtracking');
     pseudocodeBtn = page.locator('.btn-pseudocode');
     await expect(pseudocodeBtn).toBeVisible();
+  });
+
+  test('Quiz - answer a question, see the explanation, move on', async ({ page }) => {
+    await page.goto('/algorithm');
+    await page.getByRole('button', { name: /Take a quiz/ }).click();
+    await page.locator('.quiz-topic').first().click();
+    await expect(page.locator('.quiz__meta')).toContainText('Question 1 of');
+    await page.locator('.quiz-option').first().click();
+    await expect(page.locator('.quiz-option.is-correct')).toHaveCount(1);
+    await expect(page.locator('.quiz__explain')).toBeVisible();
+    await page.getByRole('button', { name: /Next question/ }).click();
+    await expect(page.locator('.quiz__meta')).toContainText('Question 2 of');
+    await page.keyboard.press('Escape');
+    await expect(page.locator('.quiz')).toHaveCount(0);
+  });
+
+  test('Practice works with the keyboard only (bars, grid cells, graph nodes)', async ({ page }) => {
+    await page.goto('/algorithm?algo=bubbleSort&mode=practice');
+    const values = page.locator('.practice .bar-value');
+    const before = await values.allTextContents();
+    await page.locator('.practice .bar-slot').nth(0).focus();
+    await page.keyboard.press('Enter');
+    await page.locator('.practice .bar-slot').nth(1).focus();
+    await page.keyboard.press('Enter');
+    await expect(values.nth(0)).toHaveText(before[1]);
+
+    await page.goto('/algorithm?algo=bfs&mode=practice');
+    await page.locator('.practice [role=gridcell][tabindex="0"]').focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(page.locator('.practice [role=gridcell][tabindex="0"]')).toBeFocused();
+
+    await page.goto('/algorithm?algo=dijkstraGraph&mode=practice');
+    await page.locator('.practice .graph-node[role=button]').nth(1).focus();
+    await page.keyboard.press('Enter');
+    await expect(page.locator('.practice-feedback')).toBeVisible();
   });
 });

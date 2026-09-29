@@ -84,7 +84,6 @@
 .hero-demo__top { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
 .hero-demo__title { display: inline-flex; align-items: center; gap: 0.5rem; font-weight: 600; font-size: 0.92rem; }
 .hero-demo__controls { display: flex; gap: 0.4rem; }
-.live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 3px var(--green-dim); }
 .hero-demo__message {
   margin: 0.75rem 0 0.5rem;
   font-family: var(--font-mono);

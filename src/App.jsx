@@ -61,7 +61,7 @@ function AlgorithmLayout() {
     <div className="app-container">
       {/* Mobile Header overlay toggle */}
       <div className="mobile-header">
-        <button onClick={() => setIsSidebarOpen(true)} className="mobile-menu-btn">
+        <button onClick={() => setIsSidebarOpen(true)} className="mobile-menu-btn" aria-label="Open menu">
           <Menu size={24} />
         </button>
         <span className="mono-text bold">SPIT Algo Visualizer</span>

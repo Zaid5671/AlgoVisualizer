@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { activateOnKey } from '../../utils/keyboard';
 import { CANVAS_WIDTH, CANVAS_HEIGHT, NODE_RADIUS, nodeLabel } from '../../graph/graphModel';
 
 const DRAG_THRESHOLD = 4; // px in SVG units before a press counts as a drag rather than a click
@@ -160,7 +161,17 @@ export function GraphCanvas({
           const g = edgeGeometry(a, b, hasReverse(edge) ? PARALLEL_OFFSET : 0, directed ? 2 : 0);
 
           return (
-            <g key={edge.id} className={`graph-edge is-${state} ${edgeClassOf?.(edge.id) || ''}`} onPointerDown={(e) => handleEdgeDown(e, edge)}>
+            <g
+              key={edge.id}
+              className={`graph-edge is-${state} ${edgeClassOf?.(edge.id) || ''}`}
+              onPointerDown={(e) => handleEdgeDown(e, edge)}
+              {...(!editable && onEdgeActivate ? {
+                role: 'button',
+                tabIndex: 0,
+                'aria-label': `edge ${nodeLabel(edge.source)} to ${nodeLabel(edge.target)}${weighted ? `, weight ${edge.weight}` : ''}`,
+                onKeyDown: activateOnKey(() => onEdgeActivate(edge.id)),
+              } : {})}
+            >
               <line className="graph-edge__hit" x1={g.x1} y1={g.y1} x2={g.x2} y2={g.y2} />
               <line
                 className="graph-edge__line"
@@ -196,7 +207,18 @@ export function GraphCanvas({
           const badge = nodeBadgeOf?.(node.id);
 
           return (
-            <g key={node.id} className={classes} transform={`translate(${node.x}, ${node.y})`} onPointerDown={(e) => handleNodeDown(e, node)}>
+            <g
+              key={node.id}
+              className={classes}
+              transform={`translate(${node.x}, ${node.y})`}
+              onPointerDown={(e) => handleNodeDown(e, node)}
+              {...(!editable && onNodeActivate ? {
+                role: 'button',
+                tabIndex: 0,
+                'aria-label': `node ${nodeLabel(node.id)}${badge !== undefined && badge !== null ? `, ${badge}` : ''}`,
+                onKeyDown: activateOnKey(() => onNodeActivate(node.id)),
+              } : {})}
+            >
               {isStart && <text className="graph-node__tag" textAnchor="middle" y={-NODE_RADIUS - 8}>START</text>}
               <circle r={NODE_RADIUS} style={fill ? { fill } : undefined} />
               <text className="graph-node__label" textAnchor="middle" dy="5">{nodeLabel(node.id)}</text>

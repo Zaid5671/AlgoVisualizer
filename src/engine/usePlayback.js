@@ -1,10 +1,9 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { PlaybackEngine } from './PlaybackEngine';
 
 export function usePlayback(generator, inputData) {
-  // Use a ref so the engine instance persists across re-renders
-  const engineRef = useRef(new PlaybackEngine());
-  const engine = engineRef.current;
+  // One engine per component, created once (a lazy initial state, so it isn't rebuilt on every render)
+  const [engine] = useState(() => new PlaybackEngine());
 
   // React state just to trigger re-renders
   const [playbackState, setPlaybackState] = useState(engine.getCurrentState());
