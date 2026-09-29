@@ -26,8 +26,12 @@ function AlgorithmLayout() {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const categoryParam = searchParams.get('category');
+  const algoParam = searchParams.get('algo');
+  const initialMode = searchParams.get('mode') === 'practice' ? 'practice' : 'watch';
 
-  const initialAlgo = categoryParam === 'sorting' ? 'bubbleSort' :
+  // ?algo=<key> opens one algorithm directly; ?category= opens the first one in a topic.
+  const initialAlgo = ALGORITHMS[algoParam] ? algoParam :
+    categoryParam === 'sorting' ? 'bubbleSort' :
     categoryParam === 'pathfinding' ? 'bfs' :
       categoryParam === 'graph' ? 'bfsGraph' :
         categoryParam === 'backtracking' ? 'nQueens' :
@@ -82,7 +86,7 @@ function AlgorithmLayout() {
         <div className="page">
           <header className="algo-header">
             <div className="algo-header__text">
-              <span className="eyebrow breadcrumbs">specimen / {activeAlgorithm.category}</span>
+              <span className="eyebrow breadcrumbs">algorithms / {activeAlgorithm.category}</span>
               <h1>{activeAlgorithm.name}</h1>
               <p className="algo-header__desc">{activeAlgorithm.description}</p>
             </div>
@@ -107,13 +111,13 @@ function AlgorithmLayout() {
           </header>
 
           {activeAlgorithm.category === 'Pathfinding' ? (
-            <PathfindingView activeAlgorithm={activeAlgorithm} onStep={setCurrentSnapshot} />
+            <PathfindingView activeAlgorithm={activeAlgorithm} onStep={setCurrentSnapshot} initialMode={initialMode} />
           ) : activeAlgorithm.category === 'Graph' ? (
-            <GraphView activeAlgorithm={activeAlgorithm} onStep={setCurrentSnapshot} />
+            <GraphView activeAlgorithm={activeAlgorithm} onStep={setCurrentSnapshot} initialMode={initialMode} />
           ) : activeAlgorithm.category === 'Backtracking' ? (
-            <BacktrackingView activeAlgorithm={activeAlgorithm} onStep={setCurrentSnapshot} />
+            <BacktrackingView activeAlgorithm={activeAlgorithm} onStep={setCurrentSnapshot} initialMode={initialMode} />
           ) : (
-            <SortingView activeAlgorithm={activeAlgorithm} onStep={setCurrentSnapshot} />
+            <SortingView activeAlgorithm={activeAlgorithm} onStep={setCurrentSnapshot} initialMode={initialMode} />
           )}
 
           <AlgorithmInfo activeAlgorithm={activeAlgorithm} />

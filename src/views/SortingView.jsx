@@ -38,12 +38,12 @@ const barStateFor = (snapshot, idx) => {
   return 'default';
 };
 
-export function SortingView({ activeAlgorithm, onStep }) {
+export function SortingView({ activeAlgorithm, onStep, initialMode = 'watch' }) {
   const [arraySize, setArraySize] = useState(14);
   const [initialArray, setInitialArray] = useState(() => randomArray(14));
   const [customArrayStr, setCustomArrayStr] = useState('');
   const [customError, setCustomError] = useState(null);
-  const [mode, setMode] = useState('watch');
+  const [mode, setMode] = useState(initialMode);
 
   // Switching algorithm keeps the same array so algorithms can be compared on identical input.
   const playback = usePlayback(activeAlgorithm.generator, initialArray);
