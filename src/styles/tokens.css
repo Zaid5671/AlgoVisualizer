@@ -1,0 +1,71 @@
+/* Design tokens — the single source of truth for color, type, radius and shadow.
+   Components should reference these variables instead of hard-coded values. */
+:root {
+  /* Surfaces */
+  --surface: #ffffff;
+  --surface-muted: #f7f7f7;
+  --surface-warm: #fffaf0;
+  --border: #ebebeb;
+  --border-strong: #dddddd;
+
+  /* Ink */
+  --ink: #222222;
+  --ink-dim: #717171;
+  --ink-faint: #b0b0b0;
+
+  /* Accents (each with a tinted background) */
+  --pink: #ff385c;
+  --pink-hover: #e31c5f;
+  --pink-dim: #fff0f2;
+  --yellow: #f7b500;
+  --yellow-dim: #fff8e1;
+  --green: #008a05;
+  --green-dim: #eaf7eb;
+  --blue: #1769ff;
+  --blue-dim: #edf3ff;
+  --purple: #7b61ff;
+  --purple-dim: #f1efff;
+  --red: #c13515;
+  --red-dim: #fff1ed;
+
+  /* Type */
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* Shape */
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-pill: 999px;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 6px 16px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.16);
+
+  /* Visualization states */
+  --state-default: #e4e4e4;
+  --state-comparing: var(--blue);
+  --state-swapping: var(--pink);
+  --state-pivot: var(--yellow);
+  --state-settled: var(--green);
+
+  /* Legacy aliases — still referenced by views that have not been migrated yet */
+  --bg-color: var(--surface);
+  --text-color: var(--ink);
+  --text-muted: var(--ink-dim);
+  --border-color: var(--border);
+  --accent-yellow: var(--yellow);
+  --accent-pink: var(--pink);
+  --accent-purple: var(--purple);
+  --accent-green: var(--green);
+  --accent-blue: var(--blue);
+  --accent-orange: var(--pink);
+  --bar-default: var(--state-default);
+  --bar-comparing: var(--state-comparing);
+  --bar-swapping: var(--state-swapping);
+  --bar-settled: var(--state-settled);
+  --bar-pivot: var(--state-pivot);
+  --ink-shadow: var(--shadow-sm);
+  --ink-shadow-sm: var(--shadow-sm);
+  --ink-shadow-lg: var(--shadow-lg);
+}
