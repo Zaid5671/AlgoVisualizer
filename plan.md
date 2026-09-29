@@ -16,6 +16,7 @@ When a phase is done, move its summary to progress.md and mark it done in the ta
 | 3d | Backtracking: practice mode + view migration | ✅ done |
 | 4 | Landing page redesign | ✅ done |
 | 5 | Polish, cleanup, merge and deploy | ⏭ next |
+| 6 | Colour scheme | ⏸ waiting for a decision |
 
 The old step 4 ("migrate the remaining views") was folded into 3b and 3d; step 4 is now the landing page. The practice UI lives inside those views, so each view is rebuilt once, together with its practice mode.
 
@@ -177,6 +178,52 @@ Rebuild `src/views/BacktrackingView.jsx` on the shared components. Board size / 
 - **README:** update features and screenshots; document practice mode and the graph editor.
 - **Merge** `ui-redesign` into `main`, then deploy to Vercel and smoke-test the chatbot (`/api/chat`) in production.
 - **Security:** make sure the Gemini key exposed by the old project fyp repo has been revoked.
+
+## 6 — Colour scheme ⏸ (waiting for a decision)
+
+**Problem.** The interface and the visualizations share colours with different meanings:
+- **pink** is both the brand/buttons and "swapping" / "start" / "rejected";
+- **yellow** is the selected tool, the practice question box, "current" and the hint highlight;
+- **blue** is both the selected speed and "comparing" / "frontier";
+- grids and boards are beige.
+
+This works against principle 8 (explain every colour). The current pink (`#ff385c`) is also Airbnb's exact brand colour, and white text on it fails WCAG AA (3.5 : 1).
+
+**Agreed direction (colour not chosen yet):**
+- **Interface colours:** one brand colour, only for things you can press (main buttons, links, the play button). Everything else is neutral. Selected controls (tool, speed, mode tab) are **dark**, not yellow or blue. The practice question box is neutral grey.
+- **Algorithm colours:** a separate set, used only inside bars, grids, graphs and boards, with the same meaning in all four topics:
+
+  | Meaning | Colour | Examples |
+  |---|---|---|
+  | Not looked at yet | light grey | unsorted bars, empty cells, unvisited nodes |
+  | Being looked at | blue | comparing, frontier, queue |
+  | Current step | amber | current cell or node, pivot |
+  | Changing | orange-red | swapping, writing |
+  | Done / final | green | settled, path, finalised, MST |
+  | Removed / rejected | red, plus ✗ or a dashed line | backtrack, rejected edge |
+  | Start / target | dark-outlined cell with S / T (target may be purple) | never filled dark, or they look like walls |
+
+- **Hints** use a dashed outline plus a 💡 badge, not a colour, so they can't be confused with algorithm state.
+- **Grids and boards** become light grey instead of beige; mud stays brown.
+- **Never rely on colour alone:** keep ✗ marks, dashes and labels (red vs green is hard for colour-blind users). Use amber for fills, never for text.
+
+**Brand colour options** (preview: [docs/colour-preview.html](docs/colour-preview.html), open it in a browser):
+
+| Option | Hex | White-text contrast | Consequence for the algorithm colours |
+|---|---|---|---|
+| Current pink | `#ff385c` | 3.5 : 1 (fails AA) | none, but the mixed meanings stay |
+| Raspberry | `#d6336c` | 4.6 : 1 | smallest change |
+| **Indigo** (recommended) | `#4f46e5` | 6.3 : 1 | "being looked at" becomes sky blue `#0ea5e9`; target becomes dark-outlined instead of purple |
+| Teal | `#0f766e` | 5.5 : 1 | "done" becomes lime green `#5c940d` |
+
+**Once the team decides:**
+- update `src/styles/tokens.css` with separate `--brand-*` and `--algo-*` tokens;
+- move every view onto the new tokens: segmented controls, speed buttons, practice prompt, hint styles, grid and board colours, legends and the "How to read this" guides;
+- update the landing page accent;
+- regenerate the landing screenshots (`npm run screenshots`);
+- re-run the Playwright tests and screenshot every view.
+
+---
 
 ## Open questions
 - Should practice record progress (for example best scores per algorithm) in `localStorage`? Not planned yet.

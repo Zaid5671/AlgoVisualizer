@@ -128,6 +128,7 @@ To run the tests against the Vite dev server, temporarily change `baseURL` in `p
 The detailed plan for everything left is in **[plan.md](plan.md)**. In short:
 
 1. **Landing page leftovers:** real team photos and the GitHub link (both in `src/data/site.js`).
-2. **5 — Polish** (next): restyle quiz/chatbot/modals, mobile and accessibility passes, lint cleanup, README, merge to `main` and deploy.
+2. **6 — Colour scheme** (on hold): pick a brand colour and separate interface colours from algorithm colours. Options and spec are in plan.md; preview in `docs/colour-preview.html`.
+3. **5 — Polish** (next): restyle quiz/chatbot/modals, mobile and accessibility passes, lint cleanup, README, merge to `main` and deploy.
 
 Still open outside the code: **revoke the Gemini API key** that was hard-coded in the old project fyp repo (`Mohammed-Afshaan/SPIT-Algo-Visualiser`). The local `project fyp` folder and zip have been deleted.
