@@ -107,7 +107,7 @@ To run the tests against the Vite dev server, temporarily change `baseURL` in `p
   - 17 Playwright tests pass, including N-Queens watch-mode solve, N-Queens practice (early-backtrack and diagonal-attack mistakes, then solve), and Sudoku and colouring practice to completion.
   - A Node property check covered N-Queens n = 2–8, 200 Sudokus with 3–16 blanks and 400 random colouring graphs, with random accepted moves. Every run ends, every solution is valid, and "no solution" matches brute force exactly.
 
-### Step 4 — Landing page redesign
+### Step 4 — Landing page redesign (`26f6a1b`)
 - **New landing page** (`views/LandingPage.jsx`, `styles/landing.css`) on the app's design system, replacing the Tailwind "Specimen" page with its fake stats and scripted AI chat. Sections:
   - hero with a live Bubble Sort demo (`components/landing/HeroDemo.jsx`, the real generator and `BarChart`, with a colour key and pause / new numbers);
   - Watch → Practice → Check steps;
