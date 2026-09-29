@@ -38,11 +38,16 @@ const edgeGeometry = (a, b, offset, trimEnd) => {
  *
  * tool: 'move' | 'node' | 'edge' | 'delete' — only used when `editable`.
  * display: the current algorithm snapshot (activeNodes, visitedNodes, activeEdges, visitedEdges).
- * onNodeActivate: called on node click when not editable (practice mode).
+ * onNodeActivate / onEdgeActivate: called on click when not editable (practice mode).
+ * Practice decorations (all optional):
+ *   nodeClassOf(id) / edgeClassOf(id) -> extra classes
+ *   nodeBadgeOf(id) -> short text shown under a node (e.g. a distance)
+ *   nodeFillOf(id)  -> fill colour (e.g. component colours)
  */
 export function GraphCanvas({
   graph, directed, weighted, startNodeId, display,
-  editable, tool, selection, onSelect, onChange, onNodeActivate, emptyHint,
+  editable, tool, selection, onSelect, onChange, onNodeActivate, onEdgeActivate, emptyHint,
+  nodeClassOf, edgeClassOf, nodeBadgeOf, nodeFillOf,
 }) {
   const svgRef = useRef(null);
   const dragRef = useRef(null);
@@ -85,7 +90,10 @@ export function GraphCanvas({
 
   const handleEdgeDown = (e, edge) => {
     e.stopPropagation();
-    if (!editable) return;
+    if (!editable) {
+      onEdgeActivate?.(edge.id);
+      return;
+    }
     if (tool === 'delete') onChange({ type: 'removeEdge', id: edge.id });
     else onSelect({ type: 'edge', id: edge.id });
   };
@@ -152,7 +160,7 @@ export function GraphCanvas({
           const g = edgeGeometry(a, b, hasReverse(edge) ? PARALLEL_OFFSET : 0, directed ? 2 : 0);
 
           return (
-            <g key={edge.id} className={`graph-edge is-${state}`} onPointerDown={(e) => handleEdgeDown(e, edge)}>
+            <g key={edge.id} className={`graph-edge is-${state} ${edgeClassOf?.(edge.id) || ''}`} onPointerDown={(e) => handleEdgeDown(e, edge)}>
               <line className="graph-edge__hit" x1={g.x1} y1={g.y1} x2={g.x2} y2={g.y2} />
               <line
                 className="graph-edge__line"
@@ -182,13 +190,22 @@ export function GraphCanvas({
             isStart && 'is-start',
             isSelected('node', node.id) && 'is-selected',
             activeSource === node.id && 'is-pending',
+            nodeClassOf?.(node.id),
           ].filter(Boolean).join(' ');
+          const fill = nodeFillOf?.(node.id);
+          const badge = nodeBadgeOf?.(node.id);
 
           return (
             <g key={node.id} className={classes} transform={`translate(${node.x}, ${node.y})`} onPointerDown={(e) => handleNodeDown(e, node)}>
               {isStart && <text className="graph-node__tag" textAnchor="middle" y={-NODE_RADIUS - 8}>START</text>}
-              <circle r={NODE_RADIUS} />
+              <circle r={NODE_RADIUS} style={fill ? { fill } : undefined} />
               <text className="graph-node__label" textAnchor="middle" dy="5">{nodeLabel(node.id)}</text>
+              {badge !== undefined && badge !== null && (
+                <g className="graph-node__badge" transform={`translate(0, ${NODE_RADIUS + 13})`}>
+                  <rect x="-15" y="-9" width="30" height="17" rx="8" />
+                  <text textAnchor="middle" dy="4">{badge}</text>
+                </g>
+              )}
             </g>
           );
         })}

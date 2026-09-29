@@ -806,6 +806,7 @@ button.chip.active { border-color: var(--ink); color: var(--ink); background: va
 
 .practice-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
 .practice-choices { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; }
+.practice-choices--start { justify-content: flex-start; gap: 0.5rem; }
 .practice-choices__label { font-size: 0.86rem; color: var(--ink-dim); }
 
 .value-chip {
@@ -931,7 +932,7 @@ button.value-chip:hover { transform: translateY(-2px); box-shadow: var(--shadow-
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   background: var(--surface-muted);
-  max-height: 420px;
+  max-height: 560px;
   overflow-y: auto;
 }
 .practice-panel__items { display: flex; flex-wrap: wrap; gap: 0.35rem; }
@@ -1058,6 +1059,51 @@ button.value-chip:hover { transform: translateY(-2px); box-shadow: var(--shadow-
 .graph-arrow--active { fill: var(--pink); }
 .graph-rubber-band { stroke: var(--blue); stroke-width: 2; stroke-dasharray: 5 4; pointer-events: none; }
 .graph-empty { font-family: var(--font-sans); font-size: 15px; fill: var(--ink-faint); }
+
+/* Graph practice states */
+.graph-node.is-frontier circle { stroke: var(--blue); stroke-dasharray: 5 3; stroke-width: 3; }
+.graph-node.is-onstack circle { fill: #b9d0ff; stroke: var(--blue); }
+.graph-node.is-tree circle { fill: var(--green-dim); stroke: var(--green); stroke-width: 3; }
+.graph-node.is-choosable { cursor: pointer; }
+.graph-node.is-choosable:hover circle { stroke-width: 4.5; }
+.graph-node.is-hint circle { stroke: var(--yellow); stroke-width: 5; stroke-dasharray: none; animation: svgHintPulse 1.1s ease-in-out infinite; }
+@keyframes svgHintPulse { 0%, 100% { stroke-width: 4; } 50% { stroke-width: 7; } }
+.graph-node__badge rect { fill: var(--ink); }
+.graph-node__badge text { font-family: var(--font-mono); font-size: 10px; font-weight: 700; fill: #fff; }
+.graph-edge.is-candidate .graph-edge__line { stroke: var(--blue); stroke-dasharray: 7 5; stroke-width: 3; }
+.graph-edge.is-candidate:hover .graph-edge__line { stroke-width: 5; }
+.graph-edge.is-rejected .graph-edge__line { stroke: #f0b4bf; stroke-dasharray: 3 5; }
+.graph-edge.is-hint .graph-edge__line { stroke: var(--yellow); stroke-width: 6; stroke-dasharray: none; }
+
+.practice-split__main { display: flex; flex-direction: column; gap: 0.75rem; min-width: 0; }
+.practice-summary__graph { width: 100%; max-width: 640px; }
+
+.dist-table { width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: 0.75rem; }
+.dist-table th { text-align: left; font-weight: 600; color: var(--ink-dim); padding: 0.25rem 0.35rem; border-bottom: 1px solid var(--border); }
+.dist-table td { padding: 0.3rem 0.35rem; border-bottom: 1px solid var(--border); }
+.dist-table tr.is-done td { color: var(--ink-faint); }
+.dist-table tr.is-updated td { background: var(--pink-dim); }
+.dist-table tr.is-hint td { background: var(--yellow-dim); }
+.text-input--cell { width: 4.2rem; padding: 0.2rem 0.45rem; border-radius: var(--radius-xs); font-size: 0.75rem; }
+
+.edge-list { list-style: none; display: flex; flex-direction: column; gap: 2px; font-family: var(--font-mono); font-size: 0.74rem; }
+.edge-list__item { display: grid; grid-template-columns: 1fr 2rem 4.5rem; gap: 0.4rem; padding: 0.25rem 0.45rem; border-radius: var(--radius-xs); }
+.edge-list__item.is-current { background: var(--pink-dim); font-weight: 700; }
+.edge-list__item.is-added { color: var(--green); }
+.edge-list__item.is-rejected { color: var(--ink-faint); text-decoration: line-through; }
+.edge-list__status { text-align: right; }
+
+.palette { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.palette__swatch { width: 2rem; height: 2rem; border-radius: 50%; border: 2px solid var(--border-strong); cursor: pointer; }
+.palette__swatch.is-active { border-color: var(--ink); box-shadow: 0 0 0 3px var(--surface), 0 0 0 5px var(--ink); }
+
+/* Graph guide samples */
+.grid-key__body--single { grid-template-columns: 1fr; }
+.grid-key__terms--graph > div { grid-template-columns: 5.5rem 1fr; }
+.key-graph-sample { width: 3rem; height: 3.2rem; overflow: visible; }
+.key-graph-sample--edge { width: 3.25rem; height: 1.25rem; }
+.key-graph-sample .graph-node, .key-graph-sample .graph-edge { cursor: default; }
+.key-word { font-family: var(--font-mono); font-weight: 700; font-size: 0.78rem; }
 
 .switch { display: inline-flex; align-items: center; gap: 0.5rem; font-weight: 600; font-size: 0.82rem; cursor: pointer; user-select: none; }
 .switch input { position: absolute; opacity: 0; pointer-events: none; }

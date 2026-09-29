@@ -137,6 +137,72 @@ test.describe('Algorithm Visualizer E2E', () => {
     await expect(page.locator('.practice-summary')).toContainText('Target reached!');
   });
 
+  // Presses Hint -> Show where -> Show me (then Check when the round needs it) until the summary shows.
+  async function solveWithShowMe(page, limit = 40) {
+    for (let i = 0; i < limit && (await page.locator('.practice-summary').count()) === 0; i++) {
+      for (const label of [/^Hint$/, /^Show where$/, /^Show me$/]) {
+        await page.getByRole('button', { name: label }).click();
+      }
+      const check = page.getByRole('button', { name: /^Check$/ });
+      if (await check.count()) await check.click();
+    }
+  }
+
+  test('Graph practice - Dijkstra: wrong pick, hint, then finish', async ({ page }) => {
+    await page.goto('/algorithm?category=graph');
+    await page.getByRole('button', { name: "Dijkstra's Algorithm" }).click();
+    await page.getByRole('button', { name: /practice it yourself/i }).click();
+    await expect(page.locator('.dist-table')).toBeVisible();
+
+    // Unfinished nodes that are still at infinity can't be picked
+    const far = page.locator('.practice .graph-node').filter({ hasText: /^F/ });
+    await far.click();
+    await expect(page.locator('.practice-feedback--error')).toBeVisible();
+
+    await page.getByRole('button', { name: /^Hint$/ }).click();
+    await page.getByRole('button', { name: /Show where/ }).click();
+    await page.locator('.practice .graph-node.is-hint').first().click();
+    await expect(page.locator('.practice-feedback--success')).toBeVisible();
+
+    await solveWithShowMe(page);
+    await expect(page.locator('.practice-summary')).toContainText('Shortest distances found!');
+  });
+
+  test('Graph practice - Kruskal, Bellman-Ford and Tarjan run to completion', async ({ page }) => {
+    await page.goto('/algorithm?category=graph');
+
+    await page.getByRole('button', { name: "Kruskal's MST" }).click();
+    await page.getByRole('button', { name: /practice it yourself/i }).click();
+    await expect(page.locator('.edge-list')).toBeVisible();
+    await solveWithShowMe(page);
+    await expect(page.locator('.practice-summary')).toContainText('Minimum spanning tree built!');
+
+    await page.getByRole('button', { name: 'watch', exact: true }).click();
+    await page.locator('.text-input--select').selectOption('negative');
+    await page.getByRole('button', { name: 'Bellman-Ford' }).click();
+    await page.getByRole('button', { name: /practice it yourself/i }).click();
+    await expect(page.locator('.practice .text-input--cell').first()).toBeVisible();
+    await solveWithShowMe(page);
+    await expect(page.locator('.practice-summary')).toContainText('Shortest distances found!');
+
+    await page.getByRole('button', { name: 'watch', exact: true }).click();
+    await page.locator('.text-input--select').selectOption('scc');
+    await page.getByRole('button', { name: "Tarjan's SCC" }).click();
+    await page.getByRole('button', { name: /practice it yourself/i }).click();
+    await solveWithShowMe(page);
+    await expect(page.locator('.practice-summary')).toContainText('Components found!');
+  });
+
+  test('Graph practice - Dijkstra is blocked on negative weights', async ({ page }) => {
+    await page.goto('/algorithm?category=graph');
+    await page.locator('.text-input--select').selectOption('negative');
+    await page.getByRole('button', { name: "Dijkstra's Algorithm" }).click();
+    await page.getByRole('button', { name: /practice it yourself/i }).click();
+    await expect(page.locator('.practice .graph-issue')).toContainText('negative');
+    await page.getByRole('button', { name: /Load the classic graph/ }).click();
+    await expect(page.locator('.dist-table')).toBeVisible();
+  });
+
   test('Graph Features - Build Your Own Graph', async ({ page }) => {
     await page.goto('/algorithm?category=graph');
     await expect(page.locator('.main-content h1')).not.toBeEmpty();
