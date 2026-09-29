@@ -2,6 +2,7 @@ export const StepTypes = {
   // Sorting
   COMPARE: 'compare',
   SWAP: 'swap',
+  WRITE: 'write', // a single position is overwritten (insertion/shell insert, merge, radix)
   SETTLED: 'settled',
   PIVOT: 'pivot',
   

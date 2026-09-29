@@ -41,10 +41,25 @@ To run the tests against the Vite dev server, temporarily change `baseURL` in `p
 - Graph algorithm log messages now use letters (`utils/nodeLabel.js`) matching the canvas.
 - Shared `ui/Modal` and `OperationsLog` components. Playwright tests added for drag accuracy, text import and the editing tools (7 tests pass).
 
+### Step 3a — Practice mode: shared setup + Sorting pilot
+- Practice engine `src/practice/sortingPractice.js` (pure): builds a list of rounds per algorithm, mirroring the implementations in `src/algorithms/sorting`.
+  - Bubble / Selection / Insertion / Shell: **arrange** rounds. Rearrange the bars to match the end of each pass (or gap pass), then Check.
+  - Merge: pick the next value (left or right front) for the merged run; ties accept either, with a stability note.
+  - Quick (Lomuto, last-element pivot): click the pivot's final position; with duplicates, any valid slot is accepted.
+  - Heap: during sift-down, pick the child to swap with or "no swap".
+  - Radix (LSD): click the bucket for each value's current digit.
+- Generic session hook `src/practice/usePracticeSession.js`: rounds, three-level hint ladder (nudge → show where → show me), undo, restart, mistake and hint counters, completion. Reusable for other categories.
+- UI `components/practice/SortingPractice.jsx` plus a reusable `components/sorting/BarChart.jsx` (drag **or** click-two to swap, so it works on touch screens). Summary screen at the end.
+- Practice uses at most the first 8 values, so merge and heap sort stay around 15–20 decisions.
+- Error messages no longer give the answer away. The "show where" hint for arrange rounds highlights the next useful swap.
+- Fixed: single-index "swaps" in Insertion, Shell, Merge and Radix are now a `WRITE` step type (`engine/stepTypes.js`), with their own log filter and counter.
+- `SortingView` now uses the shared `BarChart` and `OperationsLog` (leftover de-duplication done).
+- Tests: 9 Playwright tests pass, including bubble sort pass-by-pass with click-to-swap and the quick sort pivot question with the hint ladder. Every algorithm's practice rounds were also checked on 300 random arrays (duplicates, sorted, single value).
+
 ## Next steps
 
-### Step 3 — Practice mode redesign (in progress next)
-Shared practice setup for all categories:
+### Step 3b — Practice mode for the other categories
+Reuse `usePracticeSession`. Shared goals:
 - Accept **any** valid move (ties count), not just the one the code happens to take.
 - Hints in three levels (nudge → highlight → show the move); error messages must not give away the answer.
 - Undo, reset, mistake counter, completion summary.
@@ -53,11 +68,6 @@ Shared practice setup for all categories:
 Per algorithm:
 | Algorithm | Practice question |
 |---|---|
-| Bubble, Selection, Insertion, Shell | Pass by pass: rearrange bars to match the end of pass N, then Check / Show me how |
-| Merge | Which element goes next into the merged run? |
-| Quick | Pick the pivot's final position / partition |
-| Heap | During sift-down, which child to swap with? |
-| Radix | Drop each number into its digit bucket |
 | Grid pathfinding | Which cell is expanded next? (ties accepted; show g/h/f for A*) |
 | Graph BFS / DFS | Pick the next node, with a queue/stack panel |
 | Dijkstra | Distance table; pick the unvisited node with the smallest distance |
@@ -67,7 +77,6 @@ Per algorithm:
 | N-Queens / Sudoku / Coloring | Place / fill / color, with a separate Backtrack action |
 
 Known bugs this step must fix:
-- Insertion, Shell, Merge and Radix sort record some `SWAP` steps with a single index, so their practice mode can never be completed. Needs proper step types (e.g. overwrite/insert).
 - Backtracking algorithms use `SWAP` for both placing and removing; `PLACE` / `REMOVE` exist in `stepTypes.js` but are unused.
 - Graph practice claims a "distance table" that doesn't exist; Kruskal, Prim, Bellman-Ford and Tarjan all get the same "click next node" question.
 - Grid pathfinding practice requires clicking every compared cell in exact order.
@@ -77,7 +86,7 @@ Known bugs this step must fix:
 
 ### Leftovers
 - **Revoke the Gemini API key** that is hard-coded in `project fyp/feature-enhancements.js` and pushed to GitHub (`Mohammed-Afshaan/SPIT-Algo-Visualiser`).
-- Delete `project fyp` (read-only `.git` files block Explorer; clear them with `attrib -r ... /s /d` first).
-- `SortingView` still has its own copy of the log; switch it to `OperationsLog`.
+- ~~Delete `project fyp`~~ Done (the folder and zip are gone; the GitHub repo is the only copy).
+- Possible polish: a small tree diagram next to the bars in heap sort practice.
 - Tailwind `content` in `tailwind.config.js` only covers `LandingPage.jsx`, so Tailwind classes in `QuizModal` and `ChatbotWidget` are never generated.
 - Pre-existing lint warnings (unused imports, duplicate `style` prop in `PathfindingView.jsx`).

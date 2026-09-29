@@ -43,7 +43,7 @@ export function generateRadixSortSnapshots(initialArray) {
     // Copy back to original array
     for (let i = 0; i < n; i++) {
       arr[i] = output[i];
-      record(StepTypes.SWAP, [i], `Placing ${arr[i]} into its bucket-sorted position for this digit`, 16);
+      record(StepTypes.WRITE, [i], `Placing ${arr[i]} into its bucket-sorted position for this digit`, 16);
     }
   }
 

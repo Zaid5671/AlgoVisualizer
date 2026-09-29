@@ -567,7 +567,8 @@ button.chip.active { border-color: var(--ink); color: var(--ink); background: va
   line-height: 1.45;
 }
 .practice-feedback--error { background: var(--pink-dim); color: #8a1030; }
-.practice-feedback--success { background: var(--green-dim); color: #0a5c0d; justify-content: space-between; align-items: center; }
+.practice-feedback--success { background: var(--green-dim); color: #0a5c0d; align-items: center; }
+.practice-feedback .btn { margin-left: auto; }
 
 .stage-overlay {
   position: absolute;
@@ -756,6 +757,126 @@ button.chip.active { border-color: var(--ink); color: var(--ink); background: va
 .algo-info__card ul { padding-left: 1.1rem; }
 .algo-info__card a { display: inline-block; margin-top: 0.5rem; color: var(--pink); font-weight: 600; text-decoration: none; }
 .algo-info__card a:hover { text-decoration: underline; }
+
+/* =========================================================
+   PRACTICE MODE
+   ========================================================= */
+.bar-chart.is-interactive .bar-slot { cursor: pointer; }
+.bar-chart.is-interactive .bar-slot:hover .bar { transform: translateY(-3px); }
+.bar-chart.has-labels { padding-bottom: 1.1rem; }
+.bar-slot { position: relative; }
+.bar-label {
+  position: absolute;
+  bottom: -1.15rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  color: var(--ink-faint);
+}
+.bar-slot.is-dim { opacity: 0.28; }
+.bar-slot.is-dim .bar { cursor: default; }
+.bar-slot.is-selected .bar { outline: 3px solid var(--ink); outline-offset: 2px; }
+.bar-slot.is-target:hover .bar { box-shadow: 0 0 0 3px var(--blue-dim); }
+.is-hint { animation: hintPulse 1.1s ease-in-out infinite; }
+.bar-slot.is-hint { animation: none; }
+.bar-slot.is-hint .bar { animation: hintPulse 1.1s ease-in-out infinite; outline: 2px solid var(--yellow); outline-offset: 2px; }
+@keyframes hintPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(247, 181, 0, 0); }
+  50% { box-shadow: 0 0 0 5px rgba(247, 181, 0, 0.55); }
+}
+
+.practice-score { display: inline-flex; gap: 0.9rem; font-family: var(--font-mono); font-size: 0.75rem; color: var(--ink-dim); }
+.practice-score span { display: inline-flex; align-items: center; gap: 0.3rem; }
+
+.practice-prompt {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-sm);
+  background: var(--surface-warm);
+  border: 1px solid #f1e3c2;
+}
+.practice-prompt__intro:empty { display: none; }
+.practice-prompt__intro { font-size: 0.8rem; color: var(--ink-dim); }
+.practice-prompt__question { font-weight: 600; font-size: 0.95rem; line-height: 1.45; }
+.practice-prompt__nudge { display: flex; gap: 0.4rem; align-items: flex-start; font-size: 0.86rem; color: #7a5400; line-height: 1.45; }
+.practice-prompt__nudge svg { flex-shrink: 0; margin-top: 2px; }
+
+.practice-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.practice-choices { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; }
+.practice-choices__label { font-size: 0.86rem; color: var(--ink-dim); }
+
+.value-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.4rem;
+  height: 2.2rem;
+  padding: 0 0.6rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-xs);
+  background: var(--surface);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+button.value-chip { cursor: pointer; transition: transform 0.12s ease, box-shadow 0.12s ease; }
+button.value-chip:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.value-chip--blue { border-color: var(--blue); background: var(--blue-dim); color: var(--blue); }
+.value-chip--purple { border-color: var(--purple); background: var(--purple-dim); color: var(--purple); }
+.value-chip--green { border-color: #bfe3c1; background: var(--green-dim); color: var(--green); }
+.value-chip--yellow { border-color: var(--yellow); background: var(--yellow-dim); }
+.value-chip--slot { border-style: dashed; color: var(--ink-faint); }
+
+.merge-board { display: flex; flex-direction: column; gap: 0.6rem; }
+.merge-board__row { display: grid; grid-template-columns: 6.5rem 1fr; align-items: center; gap: 0.75rem; }
+.merge-board__chips { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.merge-board__empty { font-size: 0.8rem; color: var(--ink-faint); align-self: center; }
+
+.bucket-queue { display: grid; grid-template-columns: 6.5rem 1fr; align-items: center; gap: 0.75rem; }
+.bucket-grid { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 0.4rem; }
+.bucket {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 150px;
+  padding: 0.4rem 0.25rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface-muted);
+  cursor: pointer;
+  transition: border-color 0.12s ease, background 0.12s ease;
+}
+.bucket:hover { border-color: var(--ink); background: var(--surface); }
+.bucket__items { display: flex; flex-direction: column-reverse; gap: 3px; align-items: center; }
+.bucket__item {
+  width: 100%;
+  padding: 2px 0;
+  border-radius: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  text-align: center;
+}
+.bucket__digit { font-family: var(--font-mono); font-weight: 700; font-size: 0.95rem; text-align: center; border-top: 1px solid var(--border); padding-top: 0.3rem; }
+
+.practice-summary { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; padding: 1rem 0 0.5rem; text-align: center; color: var(--ink); }
+.practice-summary > svg { color: var(--yellow); }
+.practice-summary h3 { font-size: 1.3rem; font-weight: 800; }
+.practice-summary p { color: var(--ink-dim); max-width: 520px; line-height: 1.5; }
+.practice-summary .bar-chart { width: 100%; max-width: 520px; }
+.practice-summary__actions { display: flex; gap: 0.5rem; }
+
+.log-entry__type--write { color: #c2185b; }
+
+@media (max-width: 768px) {
+  .merge-board__row, .bucket-queue { grid-template-columns: 1fr; gap: 0.35rem; }
+  .bucket-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .bucket { min-height: 100px; }
+}
 
 /* =========================================================
    GRAPH EDITOR

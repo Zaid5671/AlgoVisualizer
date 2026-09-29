@@ -40,17 +40,58 @@ test.describe('Algorithm Visualizer E2E', () => {
     await expect(bars).toHaveCount(10);
 
     // Proceed to Practice Mode
-    const practiceBtn = page.getByRole('button', { name: /practice it yourself/i });
-    await practiceBtn.click();
-    
-    // Tutorial overlay
-    const tutorialText = page.getByText(/click anywhere to start/i);
-    await expect(tutorialText).toBeVisible();
-    await tutorialText.click();
-    await expect(tutorialText).not.toBeVisible();
-    
-    // Check if practice text appears
-    await expect(page.getByText(/your turn/i)).toBeVisible();
+    await page.getByRole('button', { name: /practice it yourself/i }).click();
+    await expect(page.locator('.practice-prompt')).toContainText(/pass 1/i);
+  });
+
+  test('Sorting practice - bubble sort pass by pass with click-to-swap', async ({ page }) => {
+    await page.goto('/algorithm?category=sorting');
+    await page.locator('.custom-array-input').fill('30, 10, 20');
+    await page.locator('.btn-use-this').click();
+    await page.getByRole('button', { name: /practice it yourself/i }).click();
+
+    const bars = page.locator('.practice .bar-slot');
+    await expect(bars).toHaveCount(3);
+
+    // A wrong Check counts a mistake and keeps the round
+    await page.getByRole('button', { name: /^Check$/ }).click();
+    await expect(page.locator('.practice-feedback--error')).toBeVisible();
+    await expect(page.locator('.practice-score')).toContainText('1');
+
+    // Pass 1 of bubble sort on [30, 10, 20] ends as [10, 20, 30]
+    await bars.nth(0).click();
+    await bars.nth(1).click(); // [10, 30, 20]
+    await bars.nth(1).click();
+    await bars.nth(2).click(); // [10, 20, 30]
+    await page.getByRole('button', { name: /^Check$/ }).click();
+    await expect(page.locator('.practice-feedback--success')).toBeVisible();
+
+    // Pass 2 makes no swaps, so bubble sort stops early
+    await page.getByRole('button', { name: /^Check$/ }).click();
+    await expect(page.locator('.practice-summary')).toContainText('Sorted!');
+  });
+
+  test('Sorting practice - hint ladder and quick sort pivot question', async ({ page }) => {
+    await page.goto('/algorithm?category=sorting');
+    await page.locator('.custom-array-input').fill('40, 10, 30, 20');
+    await page.locator('.btn-use-this').click();
+    await page.getByRole('button', { name: /Quick Sort/ }).click();
+    await page.getByRole('button', { name: /practice it yourself/i }).click();
+
+    // Pivot 20: only 10 is smaller, so it lands at position 1. Clicking position 3 is wrong.
+    await page.locator('.practice .bar-slot').nth(3).click();
+    await expect(page.locator('.practice-feedback--error')).toBeVisible();
+    await page.locator('.practice .bar-slot').nth(1).click();
+    await expect(page.locator('.practice-feedback--success')).toBeVisible();
+
+    // Hint -> Show where -> Show me advances the round
+    const before = await page.locator('.status-pill').textContent();
+    await page.getByRole('button', { name: /^Hint$/ }).click();
+    await expect(page.locator('.practice-prompt__nudge')).toBeVisible();
+    await page.getByRole('button', { name: /Show where/ }).click();
+    await expect(page.locator('.practice .is-hint')).toHaveCount(1);
+    await page.getByRole('button', { name: /Show me/ }).click();
+    await expect(page.locator('.status-pill')).not.toHaveText(before);
   });
 
   test('Graph Features - Build Your Own Graph', async ({ page }) => {
