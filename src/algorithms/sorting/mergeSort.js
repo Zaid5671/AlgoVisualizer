@@ -34,11 +34,11 @@ export function generateMergeSortSnapshots(initialArray) {
       record(StepTypes.COMPARE, [left + i, mid + 1 + j], `Comparing ${L[i]} and ${R[j]}`, 11);
       if (L[i] <= R[j]) {
         arr[k] = L[i];
-        record(StepTypes.SWAP, [k], `Placing ${L[i]} into sorted position`, 12);
+        record(StepTypes.WRITE, [k], `Placing ${L[i]} into sorted position`, 12);
         i++;
       } else {
         arr[k] = R[j];
-        record(StepTypes.SWAP, [k], `Placing ${R[j]} into sorted position`, 13);
+        record(StepTypes.WRITE, [k], `Placing ${R[j]} into sorted position`, 13);
         j++;
       }
       k++;
@@ -46,14 +46,14 @@ export function generateMergeSortSnapshots(initialArray) {
     
     while (i < n1) {
       arr[k] = L[i];
-      record(StepTypes.SWAP, [k], `Copying remaining element ${L[i]}`, 15);
+      record(StepTypes.WRITE, [k], `Copying remaining element ${L[i]}`, 15);
       i++;
       k++;
     }
     
     while (j < n2) {
       arr[k] = R[j];
-      record(StepTypes.SWAP, [k], `Copying remaining element ${R[j]}`, 16);
+      record(StepTypes.WRITE, [k], `Copying remaining element ${R[j]}`, 16);
       j++;
       k++;
     }

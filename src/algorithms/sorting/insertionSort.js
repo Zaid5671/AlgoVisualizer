@@ -41,7 +41,7 @@ export function generateInsertionSortSnapshots(initialArray) {
     
     arr[j + 1] = key;
     if (j + 1 !== i) {
-      record(StepTypes.SWAP, [j + 1], settled, `Inserting ${key} into its correct position`, 7);
+      record(StepTypes.WRITE, [j + 1], settled, `Inserting ${key} into its correct position`, 7);
     }
 
     // Expand the settled (sorted) boundary

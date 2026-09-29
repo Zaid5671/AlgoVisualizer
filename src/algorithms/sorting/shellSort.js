@@ -33,7 +33,7 @@ export function generateShellSortSnapshots(initialArray) {
       
       arr[j] = temp;
       if (j !== i) {
-         record(StepTypes.SWAP, [j], settled, `Inserting ${temp} into its gap position`, 8);
+         record(StepTypes.WRITE, [j], settled, `Inserting ${temp} into its gap position`, 8);
       }
     }
   }
