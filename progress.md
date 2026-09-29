@@ -75,12 +75,27 @@ To run the tests against the Vite dev server, temporarily change `baseURL` in `p
   - 11 Playwright tests pass, including drawing plus run-to-end, and A* practice (wrong click, hint ladder, Skip 5 stops at the trace phase, full trace to the summary).
   - A Node property check plays 200 runs per preset and algorithm with random accepted ties. Every run finishes, BFS, Dijkstra and A* traces are always optimal (checked against an independent Dijkstra), and DFS and Greedy paths are connected.
 
+### Step 3c — Graph practice
+- **Practice engines** in `src/practice/graphPractice.js` (pure steppers, mirroring `src/algorithms/graph`, with ties accepted):
+  - BFS: pick the next node from the queue (any at the smallest depth).
+  - DFS: pick an unvisited neighbour of the deepest node.
+  - Dijkstra: finalise the smallest tentative distance; a live **distance table** shows the relaxations.
+  - Bellman-Ford: fill in the distance table after each pass (in-place or previous-pass results both accepted), then answer "negative cycle?".
+  - Kruskal: **Add / Reject (makes a cycle)** for each edge in sorted order, with nodes coloured by component.
+  - Prim: click the cheapest edge leaving the tree.
+  - Tarjan: paint the nodes into SCCs.
+- **UI** `components/practice/GraphPractice.jsx` on `PracticeShell`, with a side panel per algorithm (queue, stack, distance table, editable pass table plus edge order, sorted edge list, crossing edges, colour palette) and a summary with the result. `GraphCanvas` gained optional practice decorations (node and edge classes, distance badges, component fills, clickable edges).
+- **"How to read this graph" guide** (`components/graph/GraphKey.jsx`) with sample nodes and edges for every term: queue, depth, stack, backtrack, tentative distance, finalised, relax, pass, negative cycle, MST, cycle, crossing edge, SCC. It's open in practice and collapsed in watch mode.
+- **The old practice code in `GraphView`** (one "click the next node" question for every algorithm, and the non-existent distance table) was removed. Unsuitable graphs show a blocker with a one-click fix.
+- **Checks:**
+  - 14 Playwright tests pass, including Dijkstra (wrong pick, hint ladder, finish), Kruskal / Bellman-Ford / Tarjan run to completion, and the negative-weight blocker.
+  - A Node property check ran about 2,700 random graphs with random accepted ties. It matched independent references for every algorithm: shortest paths (plain Bellman-Ford relaxation, including negative-cycle detection), MST weight (Prim per component), SCCs (Kosaraju), and BFS depth order.
+
 ## Next steps
 
 The detailed plan for everything left is in **[plan.md](plan.md)**. In short:
 
-1. **3c — Graph practice** (next): queue/stack for BFS/DFS, a real distance table for Dijkstra, pass-by-pass table for Bellman-Ford, edge picking for Kruskal/Prim, SCC grouping for Tarjan.
-2. **3d — Backtracking:** fix `PLACE`/`REMOVE` step types, practice with a Backtrack action, rebuilt view.
-3. **5 — Polish:** restyle quiz/chatbot/modals, mobile and accessibility passes, lint cleanup, README, merge to `main` and deploy.
+1. **3d — Backtracking** (next): fix `PLACE`/`REMOVE` step types, practice with a Backtrack action, rebuilt view.
+2. **5 — Polish:** restyle quiz/chatbot/modals, mobile and accessibility passes, lint cleanup, README, merge to `main` and deploy.
 
 Still open outside the code: **revoke the Gemini API key** that was hard-coded in the old project fyp repo (`Mohammed-Afshaan/SPIT-Algo-Visualiser`). The local `project fyp` folder and zip have been deleted.

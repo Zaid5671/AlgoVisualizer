@@ -12,8 +12,8 @@ When a phase is done, move its summary to progress.md and mark it done in the ta
 | 2 | Graph builder | ✅ done |
 | 3a | Practice mode: shared setup + Sorting | ✅ done |
 | 3b | Pathfinding: practice mode + view migration | ✅ done |
-| 3c | Graph: practice mode | ⏭ next |
-| 3d | Backtracking: practice mode + view migration | planned |
+| 3c | Graph: practice mode | ✅ done |
+| 3d | Backtracking: practice mode + view migration | ⏭ next |
 | 5 | Polish, cleanup, merge and deploy | planned |
 
 The old step 4 ("migrate the remaining views") is folded into 3b and 3d. The practice UI lives inside those views, so each view is rebuilt once, together with its practice mode.
@@ -92,9 +92,20 @@ Uses a smaller grid (about 8 × 14) seeded from the current walls when they fit,
 
 ---
 
-## 3c — Graph practice (next)
+## 3c — Graph practice ✅
 
-Build it the same way as 3b: a stepper engine in `src/practice/graphPractice.js`, validated by a Node property check, UI on `PracticeShell`.
+Built as specified below; see progress.md. Decisions made while building:
+- **Bellman-Ford accepts both correct pass results:** in-place updates in the listed edge order (what the implementation does) and the textbook "previous pass only" version. The run continues from whichever table the learner entered.
+- **Kruskal stops once the tree has V − 1 edges,** since every remaining edge would be rejected. Prim, Dijkstra, BFS and DFS auto-apply moves with only one option.
+- **Tarjan practice is a single "paint the SCCs" round** with a colour palette. Disc/low-link values aren't practised (possible future extension).
+- **Practice runs on the graph from the graph editor** (editing is disabled during practice). Unsuitable graphs (fewer than 2 nodes, no edges, negative weights for Dijkstra) show a blocker with a "load the classic graph" button.
+- **A "How to read this graph" guide** (`GraphKey`) explains the terms for each algorithm with sample nodes and edges (principle 8).
+
+## 3d — Backtracking (next)
+
+Build it the same way as 3b and 3c: a stepper engine in `src/practice/backtrackingPractice.js`, validated by a Node property check, UI on `PracticeShell`, and a "How to read this board" guide.
+
+Original 3c spec:
 
 Runs on the graph from the graph editor. If the graph is unsuitable (for example empty, or negative weights for Dijkstra), practice shows the validation message and a "load a suitable preset" button instead of starting.
 
