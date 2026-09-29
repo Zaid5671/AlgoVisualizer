@@ -203,6 +203,47 @@ test.describe('Algorithm Visualizer E2E', () => {
     await expect(page.locator('.dist-table')).toBeVisible();
   });
 
+  test('Backtracking - N-Queens watch mode solves the board', async ({ page }) => {
+    await page.goto('/algorithm?category=backtracking');
+    const scrubber = page.locator('.playback__scrubber input[type="range"]');
+    await scrubber.fill(await scrubber.getAttribute('max'));
+    await expect(page.locator('.queens-board .queens-cell__queen')).toHaveCount(8);
+    await expect(page.locator('.log-stats')).toContainText('backtracks');
+  });
+
+  test('Backtracking practice - N-Queens mistakes are explained, then solve', async ({ page }) => {
+    await page.goto('/algorithm?category=backtracking');
+    await page.getByRole('button', { name: /practice it yourself/i }).click();
+    await expect(page.locator('.queens-board .queens-cell')).toHaveCount(16);
+
+    // Backtracking while a safe square exists is a mistake
+    await page.getByRole('button', { name: /^Backtrack$/ }).click();
+    await expect(page.locator('.practice-feedback--error')).toContainText('still a safe option');
+
+    // Queen in column 0, row 0; then row 1 of column 1 is attacked diagonally
+    await page.getByRole('button', { name: 'row 0, column 0' }).click();
+    await page.getByRole('button', { name: 'row 1, column 1' }).click();
+    await expect(page.locator('.practice-feedback--error')).toContainText('diagonally');
+
+    await solveWithShowMe(page, 60);
+    await expect(page.locator('.practice-summary')).toContainText('Solved!');
+  });
+
+  test('Backtracking practice - Sudoku and graph colouring run to completion', async ({ page }) => {
+    await page.goto('/algorithm?category=backtracking');
+    await page.getByRole('button', { name: 'Sudoku Solver' }).click();
+    await page.getByRole('button', { name: /practice it yourself/i }).click();
+    await expect(page.locator('.digit-pad')).toBeVisible();
+    await expect(page.locator('.sudoku-board .sudoku-cell.is-current')).toHaveCount(1);
+    await solveWithShowMe(page, 40);
+    await expect(page.locator('.practice-summary')).toContainText('Solved!');
+
+    await page.getByRole('button', { name: 'Graph m-Coloring' }).click();
+    await expect(page.locator('.colour-choice')).toHaveCount(3);
+    await solveWithShowMe(page, 60);
+    await expect(page.locator('.practice-summary')).toContainText(/Solved!|No solution exists/);
+  });
+
   test('Graph Features - Build Your Own Graph', async ({ page }) => {
     await page.goto('/algorithm?category=graph');
     await expect(page.locator('.main-content h1')).not.toBeEmpty();

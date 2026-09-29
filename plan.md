@@ -13,8 +13,8 @@ When a phase is done, move its summary to progress.md and mark it done in the ta
 | 3a | Practice mode: shared setup + Sorting | ✅ done |
 | 3b | Pathfinding: practice mode + view migration | ✅ done |
 | 3c | Graph: practice mode | ✅ done |
-| 3d | Backtracking: practice mode + view migration | ⏭ next |
-| 5 | Polish, cleanup, merge and deploy | planned |
+| 3d | Backtracking: practice mode + view migration | ✅ done |
+| 5 | Polish, cleanup, merge and deploy | ⏭ next |
 
 The old step 4 ("migrate the remaining views") is folded into 3b and 3d. The practice UI lives inside those views, so each view is rebuilt once, together with its practice mode.
 
@@ -101,9 +101,13 @@ Built as specified below; see progress.md. Decisions made while building:
 - **Practice runs on the graph from the graph editor** (editing is disabled during practice). Unsuitable graphs (fewer than 2 nodes, no edges, negative weights for Dijkstra) show a blocker with a "load the classic graph" button.
 - **A "How to read this graph" guide** (`GraphKey`) explains the terms for each algorithm with sample nodes and edges (principle 8).
 
-## 3d — Backtracking (next)
+## 3d — Backtracking ✅
 
-Build it the same way as 3b and 3c: a stepper engine in `src/practice/backtrackingPractice.js`, validated by a Node property check, UI on `PracticeShell`, and a "How to read this board" guide.
+Built as specified below; see progress.md. Decisions made while building:
+- **N-Queens fills columns left to right** (not rows), because that's what the implementation does.
+- **One generic engine for all three problems:** ordered slots, then place any safe value not yet tried in the current slot, or Backtrack. Values that led to a dead end are remembered per slot (shown as ✗ / struck through), so the search always ends. The implementation's own choice (the smallest untried safe value) is always accepted.
+- **Practice sizes:** N-Queens 4–6 (default 4, which needs real backtracking), Sudoku 3–14 empty cells (default 8), colouring 2–4 colours on the classic 8-node graph.
+- **Proving there's no solution counts as finishing.** Backtracking out of the first slot ends with "No solution exists".
 
 Original 3c spec:
 
