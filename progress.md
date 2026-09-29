@@ -58,35 +58,11 @@ To run the tests against the Vite dev server, temporarily change `baseURL` in `p
 
 ## Next steps
 
-### Step 3b — Practice mode for the other categories
-Reuse `usePracticeSession`. Shared goals:
-- Accept **any** valid move (ties count), not just the one the code happens to take.
-- Hints in three levels (nudge → highlight → show the move); error messages must not give away the answer.
-- Undo, reset, mistake counter, completion summary.
-- Click-to-select as an alternative to drag, so it works on touch screens.
+The detailed plan for everything left is in **[plan.md](plan.md)**. In short:
 
-Per algorithm:
-| Algorithm | Practice question |
-|---|---|
-| Grid pathfinding | Which cell is expanded next? (ties accepted; show g/h/f for A*) |
-| Graph BFS / DFS | Pick the next node, with a queue/stack panel |
-| Dijkstra | Distance table; pick the unvisited node with the smallest distance |
-| Bellman-Ford | Fill in distances after each iteration |
-| Kruskal / Prim | Pick the next edge; Kruskal also "reject: makes a cycle" |
-| Tarjan | Group nodes into SCCs |
-| N-Queens / Sudoku / Coloring | Place / fill / color, with a separate Backtrack action |
+1. **3b — Pathfinding** (next): practice mode ("which cell is expanded next?", ties accepted, g/h/f labels, skip ahead, trace the path) and a rebuilt Pathfinding view.
+2. **3c — Graph practice:** queue/stack for BFS/DFS, a real distance table for Dijkstra, pass-by-pass table for Bellman-Ford, edge picking for Kruskal/Prim, SCC grouping for Tarjan.
+3. **3d — Backtracking:** fix `PLACE`/`REMOVE` step types, practice with a Backtrack action, rebuilt view.
+4. **5 — Polish:** restyle quiz/chatbot/modals, mobile and accessibility passes, lint cleanup, README, merge to `main` and deploy.
 
-Known bugs this step must fix:
-- Backtracking algorithms use `SWAP` for both placing and removing; `PLACE` / `REMOVE` exist in `stepTypes.js` but are unused.
-- Graph practice claims a "distance table" that doesn't exist; Kruskal, Prim, Bellman-Ford and Tarjan all get the same "click next node" question.
-- Grid pathfinding practice requires clicking every compared cell in exact order.
-
-### Step 4 — Migrate remaining views
-- Pathfinding and Backtracking views still use inline styles; move them onto the shared components (stage, toolbar, legend, `OperationsLog`).
-
-### Leftovers
-- **Revoke the Gemini API key** that is hard-coded in `project fyp/feature-enhancements.js` and pushed to GitHub (`Mohammed-Afshaan/SPIT-Algo-Visualiser`).
-- ~~Delete `project fyp`~~ Done (the folder and zip are gone; the GitHub repo is the only copy).
-- Possible polish: a small tree diagram next to the bars in heap sort practice.
-- Tailwind `content` in `tailwind.config.js` only covers `LandingPage.jsx`, so Tailwind classes in `QuizModal` and `ChatbotWidget` are never generated.
-- Pre-existing lint warnings (unused imports, duplicate `style` prop in `PathfindingView.jsx`).
+Still open outside the code: **revoke the Gemini API key** that was hard-coded in the old project fyp repo (`Mohammed-Afshaan/SPIT-Algo-Visualiser`). The local `project fyp` folder and zip have been deleted.
