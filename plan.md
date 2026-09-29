@@ -14,9 +14,10 @@ When a phase is done, move its summary to progress.md and mark it done in the ta
 | 3b | Pathfinding: practice mode + view migration | ✅ done |
 | 3c | Graph: practice mode | ✅ done |
 | 3d | Backtracking: practice mode + view migration | ✅ done |
+| 4 | Landing page redesign | ✅ done |
 | 5 | Polish, cleanup, merge and deploy | ⏭ next |
 
-The old step 4 ("migrate the remaining views") is folded into 3b and 3d. The practice UI lives inside those views, so each view is rebuilt once, together with its practice mode.
+The old step 4 ("migrate the remaining views") was folded into 3b and 3d; step 4 is now the landing page. The practice UI lives inside those views, so each view is rebuilt once, together with its practice mode.
 
 ---
 
@@ -44,6 +45,20 @@ The old step 4 ("migrate the remaining views") is folded into 3b and 3d. The pra
   - A Node property check over many random inputs: the implementation's own choice is always accepted, following `auto` reaches the same result as watch mode, and every accepted tie still leads to a valid finish.
   - Playwright tests for one full, deterministic run and for the hint ladder.
   - Screenshots of each practice screen at desktop and mobile widths.
+
+---
+
+## 4 — Landing page ✅
+
+Built; see progress.md. Agreed decisions, which still apply when the page is edited:
+- **Audience:** students learning DSA. Plain language, no invented stats or fake tech labels; every claim must be true of the app.
+- **Same design system as the app** (tokens, Inter, pink accent). Tailwind was removed; styles live in `src/styles/landing.css`.
+- **Structure:** header → hero (live Bubble Sort demo using the real `BarChart` and generator) → Watch / Practice / Check → 4 topic cards with algorithm chips → practice-mode spotlight (alternating screenshot and text) → features grid → suggested learning order → team → final call to action → footer.
+- **Screenshots are generated, not hand-made:** `npm run screenshots` (with the dev server running) rewrites `public/landing/*.png` from the live app, so they stay current after UI changes.
+- **AI tutor** is featured modestly: one card in the features grid with an honest caveat, not a hero section.
+- **Team:** names with circular photos, all from `src/data/site.js`. A placeholder photo is used until real headshots are provided.
+- **Repo link:** `REPO_URL` in `src/data/site.js`; the footer link appears when it is set.
+- **Deep links:** `/algorithm?algo=<key>` opens one algorithm and `&mode=practice` opens it in practice mode.
 
 ---
 

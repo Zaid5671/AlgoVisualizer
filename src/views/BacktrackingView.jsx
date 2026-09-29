@@ -50,9 +50,9 @@ function RangeControl({ label, value, min, max, onChange, suffix }) {
   );
 }
 
-export function BacktrackingView({ activeAlgorithm, onStep }) {
+export function BacktrackingView({ activeAlgorithm, onStep, initialMode = 'watch' }) {
   const algoId = activeAlgorithm.id;
-  const [mode, setMode] = useState('watch');
+  const [mode, setMode] = useState(initialMode);
   const [queensN, setQueensN] = useState(BACKTRACKING_PUZZLES.nQueens);
   const [sudokuBlanks, setSudokuBlanks] = useState(SUDOKU_TOTAL_BLANKS);
   const [colors, setColors] = useState(3);

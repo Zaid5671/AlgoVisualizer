@@ -42,8 +42,8 @@ export function generateQuickSortSnapshots(initialArray) {
   }
 
   function quickSort(low, high) {
-    record(StepTypes.PIVOT, [low, high], `Partitioning array from index ${low} to ${high}`, 0);
     if (low < high) {
+      record(StepTypes.PIVOT, [low, high], `Partitioning array from index ${low} to ${high}`, 0);
       let pi = partition(low, high);
       quickSort(low, pi - 1);
       quickSort(pi + 1, high);

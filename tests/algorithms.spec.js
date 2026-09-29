@@ -4,8 +4,21 @@ test.describe('Algorithm Visualizer E2E', () => {
   test('Landing page and routing', async ({ page }) => {
     await page.goto('/');
     await expect(page).toHaveTitle(/SPIT Algo Visualizer/);
-    await page.getByRole('button', { name: /EXPLORE ALGORITHMS/i }).first().click();
+    await expect(page.locator('.hero-demo .bar')).toHaveCount(9);
+    await page.getByRole('link', { name: /Open visualizer/i }).first().click();
     await expect(page).toHaveURL(/.*algorithm/);
+  });
+
+  test('Landing page deep links open the chosen algorithm and mode', async ({ page }) => {
+    await page.goto('/');
+    await page.locator('#topics').getByRole('link', { name: 'Kruskal\'s MST' }).click();
+    await expect(page).toHaveURL(/algo=kruskals/);
+    await expect(page.locator('.main-content h1')).toHaveText(/Kruskal/);
+
+    await page.goto('/');
+    await page.getByRole('link', { name: /Try A\* practice/ }).click();
+    await expect(page.locator('.main-content h1')).toHaveText(/A\* Search/);
+    await expect(page.locator('.practice')).toBeVisible();
   });
 
   test('Sorting Features (Bubble Sort) - Sliders and Custom Arrays', async ({ page }) => {

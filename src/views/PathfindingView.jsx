@@ -31,7 +31,7 @@ const defaultEndpoints = (rows, cols) => ({
 
 const sameCell = (a, r, c) => a.row === r && a.col === c;
 
-export function PathfindingView({ activeAlgorithm, onStep }) {
+export function PathfindingView({ activeAlgorithm, onStep, initialMode = 'watch' }) {
   const weighted = WEIGHTED.has(activeAlgorithm.id);
 
   const [size, setSize] = useState({ rows: 18, cols: 34 });
@@ -41,7 +41,7 @@ export function PathfindingView({ activeAlgorithm, onStep }) {
   const [tool, setTool] = useState('wall');
   const [paintAction, setPaintAction] = useState(null); // 'wall' | 'mud' | 'erase'
 
-  const [mode, setMode] = useState('watch');
+  const [mode, setMode] = useState(initialMode);
   const [presetId, setPresetId] = useState(() => defaultPresetFor(activeAlgorithm.id));
 
   // Each algorithm starts practice on the preset that shows it off best.

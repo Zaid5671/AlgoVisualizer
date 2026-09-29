@@ -57,7 +57,7 @@ function WeightInput({ edge, onCommit }) {
   );
 }
 
-export function GraphView({ activeAlgorithm, onStep }) {
+export function GraphView({ activeAlgorithm, onStep, initialMode = 'watch' }) {
   const traits = algorithmTraits(activeAlgorithm.id);
 
   const [graph, setGraph] = useState(initialGraph);
@@ -66,7 +66,7 @@ export function GraphView({ activeAlgorithm, onStep }) {
   const [tool, setTool] = useState('move');
   const [selection, setSelection] = useState(null);
   const [showTextEditor, setShowTextEditor] = useState(false);
-  const [mode, setMode] = useState('watch');
+  const [mode, setMode] = useState(initialMode);
 
   const directed = effectiveDirected(activeAlgorithm.id, userDirected);
   // If the chosen start node was deleted, fall back to the first remaining node.
