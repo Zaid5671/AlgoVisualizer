@@ -123,12 +123,31 @@ To run the tests against the Vite dev server, temporarily change `baseURL` in `p
 - **Fixed:** Quick Sort logged "Partitioning array from index 0 to -1" for empty ranges.
 - **Checks:** 18 Playwright tests pass, including a new deep-link test. Build is clean, lint is clean for the new files, and there is no horizontal scroll at 390px.
 
+### Step 5 — Polish (merge and deploy still to do)
+- **Restyled** onto the shared `Modal` and design tokens (`src/styles/panels.css`):
+  - Quiz: topic list, progress bar, green/red answers with icons and an explanation, score ring, Try again.
+  - Complexity dialog: plain axis labels ("input size", "work done") and a one-line meaning for each growth class.
+  - About dialog: now "About this project", crediting the three team members from `src/data/site.js` (it said "Why I built this" and mentioned "Specimen").
+  - Code tracer: light panel, current line highlighted and scrolled into view.
+  - AI tutor: pointer events so it works on touch, a bottom sheet on phones, readable errors, and an "answers can be wrong" note. The request to `/api/chat` is unchanged.
+- **Mobile:** every view in both modes checked at 390px with no sideways overflow; segmented controls wrap; smaller tutor button on phones.
+- **Accessibility:**
+  - Practice works with the keyboard alone: bars and graph nodes/edges with Tab + Enter, grid cells with the arrow keys + Enter.
+  - A global focus ring.
+  - The phone menu button now has a label.
+- **Lint:** zero warnings. Unused parameters were removed, and `usePlayback` now creates its engine once instead of on every render.
+- **README** rewritten: features, practice mode per topic, deep links, setup including the tutor, scripts, architecture, team. `.env.example` added (only `.env.example` is un-ignored). Unused old screenshots and Vite starter images removed.
+- **Also fixed:**
+  - The "Pick a specimen" sidebar label now reads "Pick an algorithm".
+  - A race in two tests that read the scrubber before steps were generated.
+- **Tests:** 20 pass, including new quiz and keyboard-only practice tests. The suite passed 3 times in a row.
+
 ## Next steps
 
 The detailed plan for everything left is in **[plan.md](plan.md)**. In short:
 
-1. **Landing page leftovers:** real team photos and the GitHub link (both in `src/data/site.js`).
+1. **Merge and deploy** (needs the team's go-ahead): push `ui-redesign`, merge into `main`, deploy to Vercel with `GEMINI_API_KEY`, test the tutor in production.
 2. **6 — Colour scheme** (on hold): pick a brand colour and separate interface colours from algorithm colours. Options and spec are in plan.md; preview in `docs/colour-preview.html`.
-3. **5 — Polish** (next): restyle quiz/chatbot/modals, mobile and accessibility passes, lint cleanup, README, merge to `main` and deploy.
+3. **Landing page leftovers:** real team photos and the GitHub link (both in `src/data/site.js`).
 
-Still open outside the code: **revoke the Gemini API key** that was hard-coded in the old project fyp repo (`Mohammed-Afshaan/SPIT-Algo-Visualiser`). The local `project fyp` folder and zip have been deleted.
+Still open outside the code: the Gemini API key that was hard-coded in the old project fyp repo (`Mohammed-Afshaan/SPIT-Algo-Visualiser`) should be deleted by its owner (probably Afshaan). It is not this app's key. The local `project fyp` folder and zip have been deleted.

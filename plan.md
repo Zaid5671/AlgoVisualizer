@@ -15,7 +15,7 @@ When a phase is done, move its summary to progress.md and mark it done in the ta
 | 3c | Graph: practice mode | ✅ done |
 | 3d | Backtracking: practice mode + view migration | ✅ done |
 | 4 | Landing page redesign | ✅ done |
-| 5 | Polish, cleanup, merge and deploy | ⏭ next |
+| 5 | Polish, cleanup, merge and deploy | 🔄 merge and deploy left |
 | 6 | Colour scheme | ⏸ waiting for a decision |
 
 The old step 4 ("migrate the remaining views") was folded into 3b and 3d; step 4 is now the landing page. The practice UI lives inside those views, so each view is rebuilt once, together with its practice mode.
@@ -168,16 +168,14 @@ Rebuild `src/views/BacktrackingView.jsx` on the shared components. Board size / 
 
 ---
 
-## 5 — Polish, cleanup, merge and deploy
+## 5 — Polish, cleanup, merge and deploy (in progress)
 
-- **Tailwind:** add `QuizModal.jsx` and `ChatbotWidget.jsx` to `content` in `tailwind.config.js`, or restyle them with the shared components (preferred, since Tailwind is scoped to the landing page).
-- **Restyle** the quiz modal, chatbot widget, complexity modal, About modal and code tracer panel onto the design tokens.
-- **Mobile pass** over every view (toolbars wrap, grid and graph fit a 390px width, practice actions reachable).
-- **Accessibility pass:** focus states, aria labels on icon buttons, keyboard access for practice choices.
-- **Lint:** clear the remaining pre-existing warnings (unused imports and parameters, set-state-in-effect).
-- **README:** update features and screenshots; document practice mode and the graph editor.
-- **Merge** `ui-redesign` into `main`, then deploy to Vercel and smoke-test the chatbot (`/api/chat`) in production.
-- **Security:** make sure the Gemini key exposed by the old project fyp repo has been revoked.
+Done (see progress.md): restyled the quiz, complexity, About, code tracer and tutor onto the design tokens; mobile pass; accessibility pass; lint at zero warnings; new README.
+
+Still to do:
+- **Merge** `ui-redesign` into `main` (push the branch first, it has never been pushed), then deploy to Vercel with `GEMINI_API_KEY` set, and smoke-test `/api/chat` in production. Needs the team's go-ahead.
+- **Security:** the Gemini key exposed in the old project fyp repo (`Mohammed-Afshaan/SPIT-Algo-Visualiser`) is a different key from this app's; its owner should delete it in Google AI Studio.
+- **Later, with phase 6:** after the colour decision, retake the landing screenshots and README images (`npm run screenshots`).
 
 ## 6 — Colour scheme ⏸ (waiting for a decision)
 
