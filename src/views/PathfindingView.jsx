@@ -8,6 +8,7 @@ import { SegmentedControl } from '../components/ui/SegmentedControl';
 import { Legend } from '../components/ui/Legend';
 import { OperationsLog } from '../components/OperationsLog';
 import { PathGrid } from '../components/pathfinding/PathGrid';
+import { PathfindingKey } from '../components/pathfinding/PathfindingKey';
 import { PathfindingPractice } from '../components/practice/PathfindingPractice';
 import { PRACTICE_PRESETS, defaultPresetFor } from '../practice/pathfindingPractice';
 
@@ -222,6 +223,7 @@ export function PathfindingView({ activeAlgorithm, onStep }) {
               {!weighted && committedGrid.some(row => row.some(c => c.weight > 1)) ? ` ${activeAlgorithm.name} ignores mud.` : ''}
             </span>
           </div>
+          <PathfindingKey algoId={activeAlgorithm.id} practice={false} defaultOpen={false} />
         </section>
       )}
 

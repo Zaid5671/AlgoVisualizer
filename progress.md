@@ -70,6 +70,7 @@ To run the tests against the Vite dev server, temporarily change `baseURL` in `p
   - The algorithm re-runs once per stroke instead of on every painted cell.
   - An inline "no path" notice replaces the old overlay.
   - Mud is kept (and noted as ignored) when switching to an unweighted algorithm, instead of being deleted.
+- **Explanations** (after user feedback that "frontier" and the numbers were unclear): a "How to read this grid" guide (`components/pathfinding/PathfindingKey.jsx`). It shows sample cells for start/target, frontier, visited, stack, current and path, defines "expand", and explains the numbers for the selected algorithm, including an annotated A* cell for f, g and h. It's open below the practice card and collapsed in watch mode. A* cells now read `g2+h10`, side panels say what they hold, and `r2 c5` is explained as row/column.
 - **Checks:**
   - 11 Playwright tests pass, including drawing plus run-to-end, and A* practice (wrong click, hint ladder, Skip 5 stops at the trace phase, full trace to the summary).
   - A Node property check plays 200 runs per preset and algorithm with random accepted ties. Every run finishes, BFS, Dijkstra and A* traces are always optimal (checked against an independent Dijkstra), and DFS and Greedy paths are connected.
