@@ -1,12 +1,11 @@
 import { useState } from 'react';
-import { Lightbulb, Undo2, RotateCcw, Check, CheckCircle2, XCircle, Trophy } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { BarChart } from '../sorting/BarChart';
-import { buildSortingPractice, nextHelpfulSwap, PRACTICE_INTRO } from '../../practice/sortingPractice';
-import { usePracticeSession, MAX_HINT_LEVEL } from '../../practice/usePracticeSession';
+import { createSortingEngine, nextHelpfulSwap, PRACTICE_INTRO } from '../../practice/sortingPractice';
+import { usePracticeSession } from '../../practice/usePracticeSession';
+import { PracticeShell } from './PracticeShell';
 
 export const PRACTICE_MAX_VALUES = 8;
-
-const HINT_LABELS = ['Hint', 'Show where', 'Show me'];
 
 function Chip({ value, tone, onClick, disabled, highlight }) {
   const Tag = onClick ? 'button' : 'span';
@@ -158,84 +157,40 @@ function BucketVisual({ round, hintLevel, onChoose }) {
 
 export function SortingPractice({ algorithm, values, onWatch }) {
   const practiceValues = values.slice(0, PRACTICE_MAX_VALUES);
-  // The parent keys this component by algorithm and values, so the rounds only need building once.
-  const [rounds] = useState(() => buildSortingPractice(algorithm.id, practiceValues));
-  const session = usePracticeSession(rounds);
-  const { round, index, total, done, work, hintLevel, mistakes, hintsUsed, feedback, canUndo, actions } = session;
+  // The parent keys this component by algorithm and values, so the engine is built once.
+  const [engine] = useState(() => createSortingEngine(algorithm.id, practiceValues));
+  const session = usePracticeSession(engine);
+  const { state, round, hintLevel, actions } = session;
+  const { rounds } = engine;
 
   // Positions settled by earlier arrange rounds (e.g. the sorted tail in bubble sort).
-  const settled = round?.kind === 'arrange' && index > 0 ? rounds[index - 1].settledAfter || [] : [];
+  const settled = round?.kind === 'arrange' && state.index > 0 ? rounds[state.index - 1].settledAfter || [] : [];
   const trimmed = values.length > PRACTICE_MAX_VALUES;
   const finalValues = [...practiceValues].sort((a, b) => a - b);
 
   return (
-    <section className="stage practice">
-      <div className="stage__header">
-        <span className="status-pill">
-          {done ? <span className="tag tag--done">complete</span> : <>ROUND <strong>{index + 1} / {total}</strong> <span className="tag">{round?.title}</span></>}
-        </span>
-        <span className="practice-score">
-          <span title="Mistakes"><XCircle size={14} /> {mistakes}</span>
-          <span title="Hints used"><Lightbulb size={14} /> {hintsUsed}</span>
-        </span>
-      </div>
-
-      {done ? (
-        <div className="practice-summary">
-          <Trophy size={28} />
-          <h3>{total === 0 ? 'Nothing to practice for this input' : 'Sorted!'}</h3>
-          {total > 0 && (
-            <p>
-              You finished {total} round{total === 1 ? '' : 's'} of {algorithm.name} with{' '}
-              <strong>{mistakes} mistake{mistakes === 1 ? '' : 's'}</strong> and <strong>{hintsUsed} hint{hintsUsed === 1 ? '' : 's'}</strong>.
-              {mistakes === 0 && hintsUsed === 0 ? ' Flawless!' : ''}
-            </p>
-          )}
-          <BarChart values={finalValues} stateOf={() => 'settled'} height={160} />
-          <div className="practice-summary__actions">
-            <button className="btn btn--primary" onClick={actions.restart}><RotateCcw size={14} /> practice again</button>
-            <button className="btn" onClick={onWatch}>watch it instead</button>
-          </div>
-        </div>
-      ) : (
-        <>
-          <div className="practice-prompt">
-            <p className="practice-prompt__intro">{index === 0 && !canUndo ? PRACTICE_INTRO[algorithm.id] : null}</p>
-            <p className="practice-prompt__question">{round.prompt}</p>
-            {hintLevel >= 1 && <p className="practice-prompt__nudge"><Lightbulb size={14} /> {round.nudge}</p>}
-          </div>
-
-          {round.kind === 'arrange' && <ArrangeVisual key={index} round={round} work={work} hintLevel={hintLevel} settled={settled} onSwap={actions.swapBars} />}
-          {round.kind === 'merge' && <MergeVisual round={round} hintLevel={hintLevel} onChoose={actions.choose} />}
-          {round.kind === 'pivot' && <PivotVisual round={round} hintLevel={hintLevel} onChoose={actions.choose} />}
-          {round.kind === 'heap' && <HeapVisual round={round} hintLevel={hintLevel} onChoose={actions.choose} />}
-          {round.kind === 'bucket' && <BucketVisual round={round} hintLevel={hintLevel} onChoose={actions.choose} />}
-
-          {feedback && (
-            <div className={`practice-feedback practice-feedback--${feedback.tone}`} role={feedback.tone === 'error' ? 'alert' : 'status'}>
-              {feedback.tone === 'error' ? <XCircle size={18} style={{ flexShrink: 0 }} /> : <CheckCircle2 size={18} style={{ flexShrink: 0 }} />}
-              <span>{feedback.text}</span>
-            </div>
-          )}
-
-          <div className="stage__footer">
-            <div className="practice-actions">
-              {round.kind === 'arrange' && (
-                <button className="btn btn--primary" onClick={actions.check}><Check size={14} /> Check</button>
-              )}
-              <button className="btn" onClick={actions.hint}>
-                <Lightbulb size={14} /> {HINT_LABELS[Math.min(hintLevel, MAX_HINT_LEVEL)]}
-              </button>
-              <button className="btn" onClick={actions.undo} disabled={!canUndo}><Undo2 size={14} /> Undo</button>
-              <button className="btn btn--ghost" onClick={actions.restart}><RotateCcw size={14} /> Restart</button>
-            </div>
-            <span className="stage__hint">
-              {round.kind === 'arrange' ? 'Drag a bar onto another, or click two bars, to swap them.' : 'Click your answer.'}
-              {trimmed ? ` Practice uses the first ${PRACTICE_MAX_VALUES} values.` : ''}
-            </span>
-          </div>
-        </>
+    <PracticeShell
+      session={session}
+      status={round ? `${round.title} · ${state.index + 1}/${rounds.length}` : null}
+      intro={PRACTICE_INTRO[algorithm.id]}
+      primaryAction={round?.kind === 'arrange' && (
+        <button className="btn btn--primary" onClick={() => actions.choose(state.work)}><Check size={14} /> Check</button>
       )}
-    </section>
+      footnote={round && `${round.kind === 'arrange' ? 'Drag a bar onto another, or click two bars, to swap them.' : 'Click your answer.'}${trimmed ? ` Practice uses the first ${PRACTICE_MAX_VALUES} values.` : ''}`}
+      summary={{
+        title: rounds.length === 0 ? 'Nothing to practice for this input' : 'Sorted!',
+        body: rounds.length > 0 ? `You finished ${rounds.length} round${rounds.length === 1 ? '' : 's'} of ${algorithm.name}.` : '',
+        extra: <BarChart values={finalValues} stateOf={() => 'settled'} height={160} />,
+      }}
+      onWatch={onWatch}
+    >
+      {round?.kind === 'arrange' && (
+        <ArrangeVisual key={state.index} round={round} work={state.work} hintLevel={hintLevel} settled={settled} onSwap={(i, j) => actions.edit({ i, j })} />
+      )}
+      {round?.kind === 'merge' && <MergeVisual round={round} hintLevel={hintLevel} onChoose={actions.choose} />}
+      {round?.kind === 'pivot' && <PivotVisual round={round} hintLevel={hintLevel} onChoose={actions.choose} />}
+      {round?.kind === 'heap' && <HeapVisual round={round} hintLevel={hintLevel} onChoose={actions.choose} />}
+      {round?.kind === 'bucket' && <BucketVisual round={round} hintLevel={hintLevel} onChoose={actions.choose} />}
+    </PracticeShell>
   );
 }

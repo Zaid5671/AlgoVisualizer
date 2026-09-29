@@ -872,6 +872,77 @@ button.value-chip:hover { transform: translateY(-2px); box-shadow: var(--shadow-
 
 .log-entry__type--write { color: #c2185b; }
 
+/* =========================================================
+   PATHFINDING GRID
+   ========================================================= */
+.path-grid {
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  touch-action: none;
+  user-select: none;
+}
+.path-grid--lg { gap: 3px; max-width: 600px; margin: 0 auto; }
+.path-cell {
+  position: relative;
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px;
+  background: #f1ede0;
+  cursor: crosshair;
+  transition: background-color 0.15s ease, transform 0.15s ease;
+  line-height: 1;
+}
+.path-grid--lg .path-cell { border-radius: 6px; }
+.path-cell.is-wall { background: #2c2c2c; }
+.path-cell.is-mud { background: #a0785a; }
+.path-cell.visited { background: #cfe3f5; }
+.path-cell.is-mud.visited { background: #8fa9bf; }
+.path-cell.on-stack { background: #b9d2ff; }
+.path-cell.current { background: var(--yellow); }
+.path-cell.path { background: var(--green); }
+.path-cell.is-start { background: var(--pink); }
+.path-cell.is-target { background: var(--purple); }
+.path-cell__icon { font-family: var(--font-mono); font-size: 0.6rem; font-weight: 700; color: #fff; }
+.path-grid--lg .path-cell__icon { font-size: 0.85rem; }
+.path-cell__label { display: flex; flex-direction: column; align-items: center; gap: 1px; font-family: var(--font-mono); font-size: 0.72rem; font-weight: 700; color: var(--ink); pointer-events: none; }
+.path-cell__label small { font-size: 0.55rem; font-weight: 500; color: var(--ink-dim); }
+.path-cell.path .path-cell__label, .path-cell.path .path-cell__label small { color: #fff; }
+
+/* Practice states */
+.path-grid.is-clickable .path-cell { cursor: default; }
+.path-cell.frontier { background: var(--surface); box-shadow: inset 0 0 0 2px var(--blue); }
+.path-cell.is-mud.frontier { background: #e8d6c6; }
+.path-cell.choosable { cursor: pointer; }
+.path-cell.choosable:hover { transform: scale(1.06); z-index: 1; }
+.path-cell.head { box-shadow: inset 0 0 0 3px var(--ink); }
+.path-cell.hint { animation: hintPulse 1.1s ease-in-out infinite; box-shadow: inset 0 0 0 3px var(--yellow); }
+
+.practice-split { display: grid; grid-template-columns: minmax(0, 1fr) 220px; gap: 1rem; align-items: start; }
+.practice-split > :only-child { grid-column: 1 / -1; }
+.practice-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-muted);
+  max-height: 420px;
+  overflow-y: auto;
+}
+.practice-panel__items { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.value-chip--mono { font-size: 0.7rem; height: 1.8rem; font-weight: 600; }
+.practice-summary__grid { width: 100%; max-width: 560px; }
+
+@media (max-width: 900px) {
+  .practice-split { grid-template-columns: 1fr; }
+  .practice-panel { max-height: none; }
+}
+
 @media (max-width: 768px) {
   .merge-board__row, .bucket-queue { grid-template-columns: 1fr; gap: 0.35rem; }
   .bucket-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
