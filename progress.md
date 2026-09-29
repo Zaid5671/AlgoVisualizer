@@ -142,12 +142,17 @@ To run the tests against the Vite dev server, temporarily change `baseURL` in `p
   - A race in two tests that read the scrubber before steps were generated.
 - **Tests:** 20 pass, including new quiz and keyboard-only practice tests. The suite passed 3 times in a row.
 
+### Deployment (`543d90e`, `ef4056d`)
+- **Live at https://zaid-algorithms.vercel.app.** Vercel is now connected to `Zaid5671/AlgoVisualizer`, so every push to `main` deploys automatically.
+- **Repo confusion:** Vercel had been deploying from a separate repo it created itself, `Zaid5671/algo-visualizer` (lowercase, one "Initial commit"). The old address `algo-visualizer-nine-tan.vercel.app` no longer works. That repo can be archived or deleted.
+- **Fixed:** refreshing an app page or opening a shared link (e.g. `/algorithm?algo=astar`) returned 404. `vercel.json` now sends every non-API address to `index.html`.
+- **Checked on the live site:** landing page, screenshots and photos load; a direct link opens A* practice, including after a refresh; the AI tutor answers (`GEMINI_API_KEY` is set).
+
 ## Next steps
 
 The detailed plan for everything left is in **[plan.md](plan.md)**. In short:
 
-1. **Deploy:** `main` is merged and pushed, but the Vercel project is not connected to the GitHub repo, so the live site still runs the old version. Either connect the repo in Vercel (auto-deploys on every push to `main`) or run `vercel --prod`. Make sure `GEMINI_API_KEY` is set in Vercel, then test the tutor on the live site.
-2. **6 — Colour scheme** (on hold): pick a brand colour and separate interface colours from algorithm colours. Options and spec are in plan.md; preview in `docs/colour-preview.html`.
-3. **Landing page leftovers:** real team photos and the GitHub link (both in `src/data/site.js`).
+1. **6 — Colour scheme** (on hold): pick a brand colour and separate interface colours from algorithm colours. Options and spec are in plan.md; preview in `docs/colour-preview.html`.
+2. **Landing page leftovers:** real team photos and the GitHub link (both in `src/data/site.js`).
 
 Still open outside the code: the Gemini API key that was hard-coded in the old project fyp repo (`Mohammed-Afshaan/SPIT-Algo-Visualiser`) should be deleted by its owner (probably Afshaan). It is not this app's key. The local `project fyp` folder and zip have been deleted.

@@ -15,7 +15,7 @@ When a phase is done, move its summary to progress.md and mark it done in the ta
 | 3c | Graph: practice mode | ✅ done |
 | 3d | Backtracking: practice mode + view migration | ✅ done |
 | 4 | Landing page redesign | ✅ done |
-| 5 | Polish, cleanup, merge and deploy | 🔄 deploy left |
+| 5 | Polish, cleanup, merge and deploy | ✅ done |
 | 6 | Colour scheme | ⏸ waiting for a decision |
 
 The old step 4 ("migrate the remaining views") was folded into 3b and 3d; step 4 is now the landing page. The practice UI lives inside those views, so each view is rebuilt once, together with its practice mode.
@@ -174,7 +174,7 @@ Done (see progress.md): restyled the quiz, complexity, About, code tracer and tu
 
 Still to do:
 - ~~Merge `ui-redesign` into `main`~~ done (fast-forward, pushed).
-- **Deploy** to Vercel. The Vercel project isn't linked to the GitHub repo, so pushes don't deploy. Connect it (Vercel → Project → Settings → Git) or run `vercel --prod`, check `GEMINI_API_KEY` is set, then smoke-test `/api/chat` in production.
+- ~~Deploy~~ done: live at https://zaid-algorithms.vercel.app, auto-deploys from `main`; tutor tested in production.
 - **Security:** the Gemini key exposed in the old project fyp repo (`Mohammed-Afshaan/SPIT-Algo-Visualiser`) is a different key from this app's; its owner should delete it in Google AI Studio.
 - **Later, with phase 6:** after the colour decision, retake the landing screenshots and README images (`npm run screenshots`).
 
