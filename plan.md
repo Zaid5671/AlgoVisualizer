@@ -11,8 +11,8 @@ When a phase is done, move its summary to progress.md and mark it done in the ta
 | 1 | Design system, app shell, Sorting view | ✅ done |
 | 2 | Graph builder | ✅ done |
 | 3a | Practice mode: shared setup + Sorting | ✅ done |
-| 3b | Pathfinding: practice mode + view migration | ⏭ next |
-| 3c | Graph: practice mode | planned |
+| 3b | Pathfinding: practice mode + view migration | ✅ done |
+| 3c | Graph: practice mode | ⏭ next |
 | 3d | Backtracking: practice mode + view migration | planned |
 | 5 | Polish, cleanup, merge and deploy | planned |
 
@@ -46,7 +46,17 @@ The old step 4 ("migrate the remaining views") is folded into 3b and 3d. The pra
 
 ---
 
-## 3b — Pathfinding (next)
+## 3b — Pathfinding ✅
+
+Built as specified below; see progress.md. Decisions made while building:
+- **DFS practice uses recursive-DFS rules:** any unvisited neighbour of the deepest cell on the current path is accepted. Dead ends pop automatically. The implementation's own choice (last neighbour pushed) is always among the accepted answers.
+- **DFS and Greedy don't have a trace round.** Their path comes from parent links the learner can't see, so it is revealed on the summary screen with a "not guaranteed shortest" note.
+- **Moves with only one possible cell are applied automatically**, so every question is a real decision.
+- **Skip 5 stops when the question type changes** (search → trace), so it never traces the path for you.
+- **Practice grids are 5–6 × 9–10 presets:** Wall with a gap, Corridors, Mud patch, U-shaped trap. Defaults: BFS → Corridors, DFS → Gap, Dijkstra / A* → Mud, Greedy → Trap. Without skipping, BFS and Dijkstra still take about 40–55 clicks; Skip 5 keeps them under about 40.
+- **`PracticeShell` was extracted** and Sorting practice moved onto it. `usePracticeSession` is now the stepper hook; Sorting wraps its precomputed rounds with `createSortingEngine`.
+
+Original spec:
 
 ### View migration
 Rebuild `src/views/PathfindingView.jsx` on the shared components: view toolbar, stage card, `Legend`, `PlaybackControls`, `OperationsLog`.
@@ -81,7 +91,9 @@ Uses a smaller grid (about 8 × 14) seeded from the current walls when they fit,
 
 ---
 
-## 3c — Graph practice
+## 3c — Graph practice (next)
+
+Build it the same way as 3b: a stepper engine in `src/practice/graphPractice.js`, validated by a Node property check, UI on `PracticeShell`.
 
 Runs on the graph from the graph editor. If the graph is unsuitable (for example empty, or negative weights for Dijkstra), practice shows the validation message and a "load a suitable preset" button instead of starting.
 

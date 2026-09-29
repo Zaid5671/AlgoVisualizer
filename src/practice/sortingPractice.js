@@ -347,3 +347,40 @@ export function buildSortingPractice(algoId, array) {
   const build = BUILDERS[algoId];
   return build ? build(array) : [];
 }
+
+// Wraps the precomputed rounds as a stepper engine for usePracticeSession.
+// State: { index, work } where `work` is the learner's copy of the array in arrange rounds.
+export function createSortingEngine(algoId, array) {
+  const rounds = buildSortingPractice(algoId, array);
+  const workFor = (i) => (rounds[i]?.kind === 'arrange' ? rounds[i].start : null);
+
+  const question = (state) => {
+    const round = rounds[state.index];
+    if (!round) return null;
+    if (round.kind !== 'arrange') return round;
+    return {
+      ...round,
+      accepts: (work) => sameValues(work, round.target),
+      mistake: (work) => {
+        const wrong = differingIndices(work, round.target).length;
+        return `${round.mistake} (${wrong} bar${wrong === 1 ? ' is' : 's are'} out of place.)`;
+      },
+      successNote: round.isNoop ? 'No swaps were needed, so the algorithm can stop here.' : null,
+      revealNote: 'This is how the pass ends. Press Check to continue.',
+    };
+  };
+
+  return {
+    rounds,
+    init: () => ({ index: 0, work: workFor(0) }),
+    question,
+    apply: (state) => ({ index: state.index + 1, work: workFor(state.index + 1) }),
+    auto: (state) => (rounds[state.index].kind === 'arrange' ? rounds[state.index].target : rounds[state.index].answer),
+    reveal: (state) => (rounds[state.index]?.kind === 'arrange' ? { ...state, work: rounds[state.index].target } : null),
+    edit: (state, { i, j }) => {
+      const work = [...state.work];
+      [work[i], work[j]] = [work[j], work[i]];
+      return { ...state, work };
+    },
+  };
+}

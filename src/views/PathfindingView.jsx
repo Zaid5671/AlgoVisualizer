@@ -1,377 +1,244 @@
 import { useState, useEffect, useMemo } from 'react';
+import { BrickWall, Waves, Eraser, Flag, Target, Shuffle, Trash2, AlertTriangle } from 'lucide-react';
 import { PlaybackControls } from '../components/PlaybackControls';
 import { usePlayback } from '../engine/usePlayback';
 import { StepTypes } from '../engine/stepTypes';
-import { Code2, Info, Play, Square } from 'lucide-react';
 import { ChatbotWidget } from '../components/ChatbotWidget';
+import { SegmentedControl } from '../components/ui/SegmentedControl';
+import { Legend } from '../components/ui/Legend';
+import { OperationsLog } from '../components/OperationsLog';
+import { PathGrid } from '../components/pathfinding/PathGrid';
+import { PathfindingPractice } from '../components/practice/PathfindingPractice';
+import { PRACTICE_PRESETS, defaultPresetFor } from '../practice/pathfindingPractice';
 
-const createInitialGrid = (rows, cols) => {
-  const grid = [];
-  for (let row = 0; row < rows; row++) {
-    const currentRow = [];
-    for (let col = 0; col < cols; col++) {
-      currentRow.push({
-        row,
-        col,
-        isWall: false,
-        weight: 1
-      });
-    }
-    grid.push(currentRow);
-  }
-  return grid;
-};
+const MODES = [
+  { value: 'watch', label: 'watch' },
+  { value: 'practice', label: 'practice it yourself' },
+];
+
+const WEIGHTED = new Set(['dijkstra', 'astar']);
+const MUD_COST = 5;
+const RANDOM_WALL_DENSITY = 0.28;
+
+const createGrid = (rows, cols) =>
+  Array.from({ length: rows }, (_, row) => Array.from({ length: cols }, (_, col) => ({ row, col, isWall: false, weight: 1 })));
+
+const defaultEndpoints = (rows, cols) => ({
+  start: { row: Math.floor(rows / 2), col: Math.floor(cols * 0.15) },
+  target: { row: Math.floor(rows / 2), col: Math.floor(cols * 0.85) },
+});
+
+const sameCell = (a, r, c) => a.row === r && a.col === c;
 
 export function PathfindingView({ activeAlgorithm, onStep }) {
-  const [numRows, setNumRows] = useState(20);
-  const [numCols, setNumCols] = useState(35);
-  
-  const [grid, setGrid] = useState(() => createInitialGrid(20, 40));
-  const [startNode, setStartNode] = useState({ row: 10, col: 5 });
-  const [endNode, setEndNode] = useState({ row: 10, col: 35 });
-  
-  const [mouseIsPressed, setMouseIsPressed] = useState(false);
-  const [drawMode, setDrawMode] = useState('wall');
-  const [dragAction, setDragAction] = useState(null); // 'DRAW_WALL', 'DRAW_MUD', 'ERASE'
-  
-    
-  const [mode, setMode] = useState('watch'); // 'watch' | 'practice'
-  const [practiceStep, setPracticeStep] = useState(0);
-  const [practiceError, setPracticeError] = useState(null);
-  const [showTutorial, setShowTutorial] = useState(false);
+  const weighted = WEIGHTED.has(activeAlgorithm.id);
 
-  const supportsWeights = activeAlgorithm.id === 'dijkstra' || activeAlgorithm.id === 'astar';
+  const [size, setSize] = useState({ rows: 18, cols: 34 });
+  const [grid, setGrid] = useState(() => createGrid(18, 34));
+  const [committedGrid, setCommittedGrid] = useState(grid);
+  const [{ start, target }, setEndpoints] = useState(() => defaultEndpoints(18, 34));
+  const [tool, setTool] = useState('wall');
+  const [paintAction, setPaintAction] = useState(null); // 'wall' | 'mud' | 'erase'
 
-  useEffect(() => {
-    if (!supportsWeights) {
-      setDrawMode('wall');
-      setGrid(prev => prev.map(row => row.map(node => ({ ...node, weight: 1 }))));
-    }
-  }, [supportsWeights]);
+  const [mode, setMode] = useState('watch');
+  const [presetId, setPresetId] = useState(() => defaultPresetFor(activeAlgorithm.id));
 
-  const updateGridSize = (newRows, newCols) => {
-    setNumRows(newRows);
-    setNumCols(newCols);
-    setGrid(createInitialGrid(newRows, newCols));
-    
-    // Recalculate start and end to be centered and away from edges
-    const newStartRow = Math.floor(newRows / 2);
-    const newStartCol = Math.floor(newCols * 0.1);
-    const newEndRow = Math.floor(newRows / 2);
-    const newEndCol = Math.floor(newCols * 0.9);
-    
-    setStartNode({ row: newStartRow, col: newStartCol });
-    setEndNode({ row: newEndRow, col: newEndCol });
-    
-    playback.actions.reset();
-    setPracticeStep(0);
-    setPracticeError(null);
-  };
+  // Each algorithm starts practice on the preset that shows it off best.
+  const [presetAlgoId, setPresetAlgoId] = useState(activeAlgorithm.id);
+  if (presetAlgoId !== activeAlgorithm.id) {
+    setPresetAlgoId(activeAlgorithm.id);
+    setPresetId(defaultPresetFor(activeAlgorithm.id));
+  }
+  // The Mud tool only exists for weighted algorithms.
+  const activeTool = tool === 'mud' && !weighted ? 'wall' : tool;
 
-  const clearGrid = (keepWalls = false) => {
-    setGrid(prev => prev.map(row => 
-      row.map(node => ({
-        ...node,
-        isWall: keepWalls ? node.isWall : false,
-        weight: keepWalls ? node.weight : 1
-      }))
-    ));
-    playback.actions.reset();
-    setPracticeStep(0);
-    setPracticeError(null);
-  };
-
-  const inputData = useMemo(() => ({ grid, startNode, endNode }), [grid, startNode, endNode]);
+  // Drawing updates `grid` live; the algorithm only re-runs when a stroke ends.
+  const inputData = useMemo(() => ({ grid: committedGrid, startNode: start, endNode: target }), [committedGrid, start, target]);
   const playback = usePlayback(activeAlgorithm.generator, inputData);
-  const { snapshot, snapshots, currentIndex, isPlaying } = playback.state;
+  const { snapshot, snapshots, currentIndex } = playback.state;
 
   useEffect(() => {
-    if (snapshot && typeof onStep === 'function') {
-      onStep(snapshot);
-    }
+    if (snapshot && typeof onStep === 'function') onStep(snapshot);
   }, [snapshot, onStep]);
+
+  const commit = (next) => {
+    setGrid(next);
+    setCommittedGrid(next);
+  };
+
+  const setCell = (g, r, c, patch) => {
+    const next = g.map(row => row.slice());
+    next[r][c] = { ...next[r][c], ...patch };
+    return next;
+  };
+
+  const paintCell = (r, c, action) => {
+    if (sameCell(start, r, c) || sameCell(target, r, c)) return;
+    const patch = action === 'wall' ? { isWall: true, weight: 1 } : action === 'mud' ? { isWall: false, weight: MUD_COST } : { isWall: false, weight: 1 };
+    setGrid(g => setCell(g, r, c, patch));
+  };
+
+  const handlePaintStart = (r, c) => {
+    if (activeTool === 'start' || activeTool === 'target') {
+      if (sameCell(activeTool === 'start' ? target : start, r, c)) return;
+      commit(setCell(grid, r, c, { isWall: false }));
+      setEndpoints(prev => ({ ...prev, [activeTool]: { row: r, col: c } }));
+      return;
+    }
+    const cell = grid[r][c];
+    // Starting a stroke on a cell that already has this material erases instead (toggle).
+    const already = (activeTool === 'wall' && cell.isWall) || (activeTool === 'mud' && cell.weight > 1);
+    const action = activeTool === 'erase' || already ? 'erase' : activeTool;
+    setPaintAction(action);
+    paintCell(r, c, action);
+  };
+
+  const handlePaint = (r, c) => {
+    if (paintAction) paintCell(r, c, paintAction);
+  };
+
+  const handlePaintEnd = () => {
+    setPaintAction(null);
+    setCommittedGrid(grid);
+  };
+
+  const resize = (rows, cols) => {
+    setSize({ rows, cols });
+    commit(createGrid(rows, cols));
+    setEndpoints(defaultEndpoints(rows, cols));
+  };
+
+  const clearWalls = () => commit(createGrid(size.rows, size.cols));
+
+  const randomWalls = () => {
+    const next = createGrid(size.rows, size.cols).map(row =>
+      row.map(cell => (sameCell(start, cell.row, cell.col) || sameCell(target, cell.row, cell.col) || Math.random() >= RANDOM_WALL_DENSITY
+        ? cell
+        : { ...cell, isWall: true })),
+    );
+    commit(next);
+  };
 
   const handleModeChange = (newMode) => {
     setMode(newMode);
-    if (newMode === 'practice') {
-      playback.actions.pause();
-      setPracticeStep(0);
-      setPracticeError(null);
-      setShowTutorial(true);
-    }
+    if (newMode === 'practice') playback.actions.pause();
   };
 
-  const expectedClicks = useMemo(() => {
-    if (!snapshots) return [];
-    return snapshots.filter(s => s.type === StepTypes.COMPARE && s.currentNodes?.length > 0);
-  }, [snapshots]);
+  const tools = [
+    { value: 'wall', label: <><BrickWall size={14} /> Wall</> },
+    ...(weighted ? [{ value: 'mud', label: <><Waves size={14} /> Mud</> }] : []),
+    { value: 'erase', label: <><Eraser size={14} /> Erase</> },
+    { value: 'start', label: <><Flag size={14} /> Start</> },
+    { value: 'target', label: <><Target size={14} /> Target</> },
+  ];
 
-  const isPracticeComplete = practiceStep >= expectedClicks.length;
-  
-  let practiceDisplaySnapshot = null;
-  if (mode === 'practice') {
-    if (practiceStep === 0) {
-      practiceDisplaySnapshot = snapshots[0];
-    } else if (isPracticeComplete) {
-      practiceDisplaySnapshot = snapshots[snapshots.length - 1];
-    } else {
-      practiceDisplaySnapshot = expectedClicks[practiceStep - 1];
-    }
-  }
+  const legend = [
+    { label: 'start', color: 'var(--pink)' },
+    { label: 'target', color: 'var(--purple)' },
+    { label: 'wall', color: '#2c2c2c' },
+    ...(weighted ? [{ label: `mud (costs ${MUD_COST})`, color: '#a0785a' }] : []),
+    { label: 'visited', color: '#9cc3e6' },
+    { label: 'current', color: 'var(--yellow)' },
+    { label: 'path', color: 'var(--green)' },
+  ];
 
-  const currentDisplay = mode === 'watch' ? snapshot : practiceDisplaySnapshot;
-
-  const applyDragAction = (row, col, action) => {
-    setGrid(prev => {
-      const newGrid = [...prev];
-      newGrid[row] = [...newGrid[row]];
-      const node = { ...newGrid[row][col] };
-      
-      if (action === 'ERASE') {
-        node.isWall = false;
-        node.weight = 1;
-      } else if (action === 'DRAW_WALL') {
-        node.isWall = true;
-        node.weight = 1;
-      } else if (action === 'DRAW_MUD') {
-        node.isWall = false;
-        node.weight = 5;
-      }
-      
-      newGrid[row][col] = node;
-      return newGrid;
-    });
+  // Look-ups for the current snapshot (watch mode).
+  const cellSet = (list) => new Set((list || []).map(n => `${n.row},${n.col}`));
+  const visited = cellSet(snapshot?.visitedNodes);
+  const current = cellSet(snapshot?.currentNodes);
+  const path = cellSet(snapshot?.pathNodes);
+  const watchStateOf = (r, c) => {
+    const k = `${r},${c}`;
+    if (path.has(k)) return 'path';
+    if (current.has(k)) return 'current';
+    if (visited.has(k)) return 'visited';
+    return '';
   };
 
-  const handleMouseDown = (row, col) => {
-    if (mode === 'practice') {
-      if (isPracticeComplete) return;
-      const currentExpected = expectedClicks[practiceStep].currentNodes[0];
-      if (currentExpected.row === row && currentExpected.col === col) {
-        setPracticeStep(prev => prev + 1);
-        setPracticeError(null);
-      } else {
-        setPracticeError(`Wrong move! Based on ${activeAlgorithm.name} rules, you should evaluate the cell at Row ${currentExpected.row}, Col ${currentExpected.col} next.`);
-      }
-      return;
-    }
-
-    if (isPlaying || currentIndex > 0) return;
-    if ((row === startNode.row && col === startNode.col) || (row === endNode.row && col === endNode.col)) return;
-    
-    const isCurrentlyWall = grid[row][col].isWall;
-    const isCurrentlyMud = grid[row][col].weight > 1;
-    const isCurrentlyEmpty = !isCurrentlyWall && !isCurrentlyMud;
-
-    let action;
-    if (isCurrentlyEmpty) {
-      action = drawMode === 'mud' ? 'DRAW_MUD' : 'DRAW_WALL';
-    } else {
-      action = 'ERASE';
-    }
-    
-    setDragAction(action);
-    applyDragAction(row, col, action);
-    setMouseIsPressed(true);
-  };
-
-  const handleMouseEnter = (row, col) => {
-    if (mode === 'practice') return;
-    if (!mouseIsPressed || isPlaying || currentIndex > 0) return;
-    if ((row === startNode.row && col === startNode.col) || (row === endNode.row && col === endNode.col)) return;
-    applyDragAction(row, col, dragAction);
-  };
-
-  const handleMouseUp = () => {
-    if (mode === 'practice') return;
-    setMouseIsPressed(false);
-  };
-
-  if (!snapshot) return <div>Loading...</div>;
-
-  const isVisited = (r, c) => currentDisplay?.visitedNodes?.some(n => n.row === r && n.col === c);
-  const isPath = (r, c) => currentDisplay?.pathNodes?.some(n => n.row === r && n.col === c);
-  const isCurrent = (r, c) => currentDisplay?.currentNodes?.some(n => n.row === r && n.col === c);
+  const noPath = snapshot?.type === StepTypes.END && !(snapshot.pathNodes?.length);
+  const pathLength = snapshot?.pathNodes?.length ? snapshot.pathNodes.length - 1 : 0;
 
   return (
-    <div className="sorting-view" style={{ position: 'relative', display: 'flex', width: '100%', minHeight: '100%', alignItems: 'stretch' }}>
-      
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem', overflow: 'visible', position: 'relative' }}>
-        
-        <div className="card-box" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.5rem 1rem' }}>
-          
-          <div style={{ display: 'flex', alignItems: 'center', background: 'white', padding: '4px', borderRadius: '999px', border: '1px solid var(--border-color)', width: 'fit-content' }}>
-             <button 
-               onClick={() => handleModeChange('watch')}
-               style={{ padding: '0.4rem 1.2rem', borderRadius: '999px', border: 'none', background: mode === 'watch' ? 'var(--accent-yellow)' : 'transparent', fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}
-             >
-               watch
-             </button>
-             <button 
-               onClick={() => handleModeChange('practice')}
-               style={{ padding: '0.4rem 1.2rem', borderRadius: '999px', border: 'none', background: mode === 'practice' ? 'var(--accent-yellow)' : 'transparent', fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}
-             >
-               practice it yourself
-             </button>
+    <>
+      <div className="view-toolbar">
+        <SegmentedControl options={MODES} value={mode} onChange={handleModeChange} ariaLabel="Mode" />
+        {mode === 'watch' ? (
+          <div className="view-toolbar__group">
+            <label className="array-size-control">
+              <span className="eyebrow">rows</span>
+              <input type="range" min="8" max="30" value={size.rows} onChange={e => resize(Number(e.target.value), size.cols)} className="slider" style={{ width: 90 }} />
+              <span className="array-size-control__value">{size.rows}</span>
+            </label>
+            <label className="array-size-control">
+              <span className="eyebrow">cols</span>
+              <input type="range" min="10" max="50" value={size.cols} onChange={e => resize(size.rows, Number(e.target.value))} className="slider" style={{ width: 90 }} />
+              <span className="array-size-control__value">{size.cols}</span>
+            </label>
           </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: 'white', padding: '0.4rem 1rem', borderRadius: '999px', border: '1px solid var(--border-color)' }}>
-            <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.8rem', color: 'var(--text-muted)' }}>Rows: {numRows}</span>
-            <input type="range" min="10" max="30" value={numRows} onChange={(e) => updateGridSize(Number(e.target.value), numCols)} style={{ width: '80px', cursor: 'pointer' }} />
-            <div style={{ width: '1px', height: '16px', background: 'var(--border-color)', margin: '0 4px' }}></div>
-            <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.8rem', color: 'var(--text-muted)' }}>Cols: {numCols}</span>
-            <input type="range" min="10" max="50" value={numCols} onChange={(e) => updateGridSize(numRows, Number(e.target.value))} style={{ width: '80px', cursor: 'pointer' }} />
-          </div>
-
-        </div>
-
-        {mode === 'practice' && (
-          <div style={{ marginBottom: '1rem', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-             STEP {practiceStep} / {expectedClicks.length} <span style={{ background: '#fff9e6', padding: '2px 8px', borderRadius: '12px', marginLeft: '8px', color: 'black' }}>your turn</span>
+        ) : (
+          <div className="view-toolbar__group">
+            <span className="eyebrow">practice grid</span>
+            <select className="text-input text-input--select" value={presetId} onChange={e => setPresetId(e.target.value)} aria-label="Practice grid">
+              {PRACTICE_PRESETS.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
+            </select>
           </div>
         )}
+      </div>
 
-        <div className="sorting-controls card-box" style={{ justifyContent: 'center', gap: '1rem', padding: '0.5rem 1rem' }}>
-           <button className="btn-use-this" onClick={() => clearGrid(false)}>Clear Grid</button>
-           
-           <div style={{ display: 'flex', gap: '0.5rem', opacity: mode === 'practice' ? 0.3 : 1, pointerEvents: mode === 'practice' ? 'none' : 'auto' }}>
-             <button 
-               className="btn-use-this" 
-               style={{ opacity: drawMode === 'wall' ? 1 : 0.5, borderColor: 'black', fontWeight: 'bold' }} 
-               onClick={() => setDrawMode('wall')}
-             >Draw Walls</button>
-             {supportsWeights && (
-               <button 
-                 className="btn-use-this" 
-                 style={{ opacity: drawMode === 'mud' ? 1 : 0.5, borderColor: 'black', fontWeight: 'bold', backgroundColor: '#a0785a', color: 'white' }}
-                 onClick={() => setDrawMode('mud')}
-               >Draw Mud (Cost: 5)</button>
-             )}
-           </div>
-        </div>
-
-        <div className="grid-container card-box" onMouseLeave={handleMouseUp} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.5rem' }}>
-          <div className="pathfinding-grid" style={{ width: '96%', maxWidth: '1100px', display: 'flex', flexDirection: 'column', gap: '1px' }}>
-            {grid.map((row, rowIdx) => {
-              return (
-                <div key={rowIdx} className="grid-row" style={{ display: 'flex', flex: 1, gap: '1px' }}>
-                  {row.map((node, nodeIdx) => {
-                    const { row, col, isWall, weight } = node;
-                    const isStart = row === startNode.row && col === startNode.col;
-                    const isEnd = row === endNode.row && col === endNode.col;
-                    
-                    let extraClass = '';
-                    if (isStart) extraClass = 'node-start';
-                    else if (isEnd) extraClass = 'node-end';
-                    else if (isWall) extraClass = 'node-wall';
-                    else if (weight > 1) extraClass = 'node-mud';
-                    else if (isPath(row, col)) extraClass = 'node-path';
-                    else if (isCurrent(row, col)) extraClass = 'node-current';
-                    else if (isVisited(row, col)) extraClass = 'node-visited';
-
-                    return (
-                      <div
-                        key={`${row}-${col}`}
-                        id={`node-${row}-${col}`}
-                        className={`node ${extraClass}`} style={{ flex: 1, aspectRatio: '1/1', width: 'auto', height: 'auto' }}
-                        onMouseDown={() => handleMouseDown(row, col)}
-                        onMouseEnter={() => handleMouseEnter(row, col)}
-                        onMouseUp={handleMouseUp}
-                        style={{ cursor: mode === 'practice' ? 'crosshair' : 'default', flex: 1, aspectRatio: '1 / 1', width: 'auto', height: 'auto', minWidth: 0, minHeight: 0 }}
-                      >
-                        {isStart && <Play size={10} fill="black" color="black" style={{ opacity: 0.7 }} />}
-                        {isEnd && <Square size={8} fill="black" color="black" style={{ opacity: 0.7 }} />}
-                      </div>
-                    );
-                  })}
-                </div>
-              );
-            })}
+      {mode === 'practice' ? (
+        <PathfindingPractice algorithm={activeAlgorithm} presetId={presetId} onWatch={() => handleModeChange('watch')} />
+      ) : (
+        <section className="stage">
+          <div className="stage__header">
+            <SegmentedControl options={tools} value={activeTool} onChange={setTool} ariaLabel="Drawing tool" />
+            <div className="view-toolbar__group">
+              <button className="btn btn--sm" onClick={randomWalls}><Shuffle size={14} /> random walls</button>
+              <button className="btn btn--sm" onClick={clearWalls}><Trash2 size={14} /> clear</button>
+            </div>
           </div>
-          
-          {/* Unreachable Edge Case Overlay */}
-          {currentDisplay?.type === StepTypes.END && (!currentDisplay.pathNodes || currentDisplay.pathNodes.length === 0) && (
-            <div style={{
-              position: 'absolute', top: '40%', left: '50%', transform: 'translate(-50%, -50%)',
-              backgroundColor: 'var(--accent-pink)', border: '4px solid black',
-              padding: '1rem 2rem', boxShadow: '8px 8px 0px black', zIndex: 10
-            }}>
-              <h2 style={{ margin: 0 }}>NO PATH FOUND!</h2>
-              <p style={{ margin: 0, fontSize: '0.9rem' }}>The target is completely blocked.</p>
+
+          <span className="status-pill">{snapshot?.message || 'press play to begin'}</span>
+
+          <PathGrid
+            grid={grid}
+            start={start}
+            target={target}
+            stateOf={watchStateOf}
+            onPaintStart={handlePaintStart}
+            onPaint={handlePaint}
+            onPaintEnd={handlePaintEnd}
+          />
+
+          {noPath && (
+            <div className="graph-issue graph-issue--warn" role="status">
+              <AlertTriangle size={15} /> No path found: the target is completely walled off.
             </div>
           )}
-        </div>
 
-        <div className="sorting-controls card-box" style={{ marginTop: 0, width: 'fit-content', padding: '0.5rem 1rem' }}>
-          <div className="legend">
-            <span className="legend-item"><span className="dot node-start"></span> Start Node</span>
-            <span className="legend-item"><span className="dot node-end"></span> Target Node</span>
-            <span className="legend-item"><span className="dot node-wall" style={{borderRadius: 4}}></span> Wall</span>
-            <span className="legend-item"><span className="dot node-visited" style={{borderRadius: 4}}></span> Visited</span>
-            <span className="legend-item"><span className="dot node-path" style={{borderRadius: 4}}></span> Shortest Path</span>
+          <div className="stage__footer">
+            <Legend items={legend} />
+            <span className="stage__hint">
+              {activeTool === 'start' || activeTool === 'target' ? `Click a cell to move the ${activeTool}.` : 'Click or drag across cells to draw; start on a filled cell to erase.'}
+              {!weighted && committedGrid.some(row => row.some(c => c.weight > 1)) ? ` ${activeAlgorithm.name} ignores mud.` : ''}
+            </span>
           </div>
-        </div>
+        </section>
+      )}
 
-        
-        
-        {mode === 'watch' && (
-          <PlaybackControls playback={playback} activeAlgorithm={activeAlgorithm} />
-        )}
-        
-        <div className="operations-log card-box" style={{ padding: '0.5rem 1rem' }}>
-          <div className="log-header">
-             <span className="mono-text bold">operations log</span>
-             <div className="log-stats">
-               <span>visited {currentDisplay?.visitedNodes?.length || 0}</span>
-               <span className="swaps">path length {currentDisplay?.pathNodes?.length || 0}</span>
-             </div>
-          </div>
-          <span className="log-message">
-            {mode === 'watch' ? (currentDisplay?.message || "press play to begin observation —") : "Practice Mode Active"}
-          </span>
-        </div>
+      {mode === 'watch' && <PlaybackControls playback={playback} activeAlgorithm={activeAlgorithm} />}
 
-        {/* TUTORIAL OVERLAY */}
-        {mode === 'practice' && showTutorial && (
-          <div 
-            onClick={() => setShowTutorial(false)}
-            style={{
-              position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-              backgroundColor: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(2px)',
-              zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer'
-            }}
-          >
-            <div style={{
-              background: 'white', padding: '2rem 3rem', borderRadius: '16px',
-              boxShadow: 'var(--ink-shadow-lg)', border: '1px solid var(--border-color)', textAlign: 'center'
-            }}>
-              <p style={{ fontFamily: 'Inter, sans-serif', fontWeight: 600, color: 'var(--text-color)', marginBottom: '0.5rem' }}>
-                Click the exact cell {activeAlgorithm.name} would evaluate next!
-              </p>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>click anywhere to start</p>
-            </div>
-          </div>
-        )}
+      {mode === 'watch' && (
+        <OperationsLog
+          snapshots={snapshots}
+          currentIndex={currentIndex}
+          stats={[
+            { label: 'visited', value: snapshot?.visitedNodes?.length || 0 },
+            { label: 'path length', value: pathLength, tone: 'swaps' },
+          ]}
+        />
+      )}
 
-        {/* ERROR TOAST */}
-        {practiceError && (
-          <div style={{
-            position: 'fixed', bottom: '2rem', right: '2rem', background: 'white',
-            border: '2px solid var(--accent-pink)', padding: '1rem', borderRadius: '12px',
-            boxShadow: 'var(--ink-shadow-lg)', maxWidth: '300px', zIndex: 100, display: 'flex',
-            gap: '12px', alignItems: 'flex-start'
-          }}>
-            <Info color="var(--accent-pink)" size={24} style={{ flexShrink: 0 }} />
-            <div>
-              <p style={{ margin: 0, fontFamily: 'Inter, sans-serif', fontSize: '0.95rem', color: 'var(--text-color)', lineHeight: 1.4 }}>
-                {practiceError}
-              </p>
-            </div>
-          </div>
-        )}
-
-      </div>
       <ChatbotWidget activeAlgorithm={activeAlgorithm} snapshot={snapshot} offsetRight="2rem" />
-    </div>
+    </>
   );
 }

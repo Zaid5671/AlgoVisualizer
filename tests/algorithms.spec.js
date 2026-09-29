@@ -94,6 +94,49 @@ test.describe('Algorithm Visualizer E2E', () => {
     await expect(page.locator('.status-pill')).not.toHaveText(before);
   });
 
+  test('Pathfinding - draw a wall and run to the end', async ({ page }) => {
+    await page.goto('/algorithm?category=pathfinding');
+    const cell = page.locator('.path-cell[data-cell="2,2"]');
+    await cell.click();
+    await expect(cell).toHaveClass(/is-wall/);
+
+    const scrubber = page.locator('.playback__scrubber input[type="range"]');
+    const max = await scrubber.getAttribute('max');
+    await scrubber.fill(max);
+    await expect(page.locator('.path-grid .path-cell.path').first()).toBeVisible();
+  });
+
+  test('Pathfinding practice - A* with hints, skip and path tracing', async ({ page }) => {
+    await page.goto('/algorithm?category=pathfinding');
+    await page.getByRole('button', { name: /^A\* Search/ }).click();
+    await page.getByRole('button', { name: /practice it yourself/i }).click();
+    await expect(page.locator('.practice-prompt')).toContainText('A*');
+
+    // Mud in the middle of the grid isn't on the frontier yet
+    await page.locator('.practice .path-cell.is-mud').first().click();
+    await expect(page.locator('.practice-feedback--error')).toBeVisible();
+
+    // Hint -> Show where highlights valid cells; clicking one is correct
+    await page.getByRole('button', { name: /^Hint$/ }).click();
+    await page.getByRole('button', { name: /Show where/ }).click();
+    await page.locator('.practice .path-cell.hint').first().click();
+    await expect(page.locator('.practice-feedback--success')).toBeVisible();
+
+    // Skip until the trace phase, then trace back using the highlighted answers
+    for (let i = 0; i < 20 && !/trace/i.test(await page.locator('.practice-prompt').textContent()); i++) {
+      await page.getByRole('button', { name: /Skip 5/ }).click();
+    }
+    // Skip stops at the start of the trace phase instead of tracing for you
+    await expect(page.locator('.practice-prompt')).toContainText('Now trace the shortest path back');
+    await expect(page.getByRole('button', { name: /Skip 5/ })).toHaveCount(0);
+    for (let i = 0; i < 40 && (await page.locator('.practice-summary').count()) === 0; i++) {
+      await page.getByRole('button', { name: /^Hint$/ }).click();
+      await page.getByRole('button', { name: /Show where/ }).click();
+      await page.locator('.practice .path-cell.hint').first().click();
+    }
+    await expect(page.locator('.practice-summary')).toContainText('Target reached!');
+  });
+
   test('Graph Features - Build Your Own Graph', async ({ page }) => {
     await page.goto('/algorithm?category=graph');
     await expect(page.locator('.main-content h1')).not.toBeEmpty();

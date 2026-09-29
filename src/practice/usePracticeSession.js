@@ -1,74 +1,65 @@
 import { useState } from 'react';
 
-// Hint levels: 0 none, 1 nudge text, 2 highlight the answer, then "show me" applies it.
+// Hint levels: 0 none, 1 nudge text, 2 highlight the answer; pressing again = "show me".
 export const MAX_HINT_LEVEL = 2;
 
 /**
- * Generic practice session over a list of rounds (see src/practice/sortingPractice.js).
+ * Generic practice session driven by a "stepper" engine:
  *
- * Rounds with kind 'arrange' keep a working copy of the array (`work`) that the learner
- * edits and then checks against `round.target`. All other rounds are single-choice and
- * are answered with `choose(answer)`, validated by `round.accepts(answer)`.
+ *   engine.init()                 -> initial state
+ *   engine.question(state)        -> current round, or null when finished
+ *   engine.apply(state, answer)   -> next state (only called with accepted answers)
+ *   engine.auto(state)            -> the implementation's own answer (used by "show me" and "skip")
+ *   engine.reveal?(state)         -> optional: state showing the answer without advancing
+ *                                    (sorting "arrange" rounds show the pass result, then the learner checks)
+ *   engine.edit?(state, action)   -> optional: state after a free edit (e.g. swapping two bars)
+ *
+ * A round needs: accepts(answer), mistake (string or answer => string), nudge.
+ * Optional: successNote (appended to "Correct!").
+ *
+ * Because the engine follows the learner's accepted answer, ties are handled naturally:
+ * any accepted answer continues the run from that choice.
  */
-export function usePracticeSession(rounds) {
-  const initialWork = rounds[0]?.kind === 'arrange' ? rounds[0].start : null;
-
-  const [index, setIndex] = useState(0);
-  const [work, setWork] = useState(initialWork);
+export function usePracticeSession(engine) {
+  const [state, setState] = useState(() => engine.init());
   const [hintLevel, setHintLevel] = useState(0);
   const [history, setHistory] = useState([]);
+  const [steps, setSteps] = useState(0);
   const [mistakes, setMistakes] = useState(0);
   const [hintsUsed, setHintsUsed] = useState(0);
-  const [feedback, setFeedback] = useState(null); // { tone: 'error' | 'success', text }
+  const [skipped, setSkipped] = useState(0);
+  const [feedback, setFeedback] = useState(null); // { tone: 'error' | 'success' | 'info', text }
 
-  const round = rounds[index] ?? null;
-  const done = index >= rounds.length;
+  const round = engine.question(state);
+  const done = round === null;
 
-  const snapshot = () => ({ index, work, hintLevel });
-  const pushHistory = () => setHistory(h => [...h, snapshot()]);
-
-  const advance = (successText) => {
-    pushHistory();
-    const next = rounds[index + 1];
-    setIndex(index + 1);
-    setWork(next?.kind === 'arrange' ? next.start : null);
-    setHintLevel(0);
-    setFeedback({ tone: 'success', text: successText });
+  const commit = (next, { advanced = 0, message = null, resetHint = true } = {}) => {
+    setHistory(h => [...h, { state, hintLevel, steps }]);
+    setState(next);
+    if (advanced) setSteps(s => s + advanced);
+    if (resetHint) setHintLevel(0);
+    setFeedback(message);
   };
 
-  const successMessage = (usedShowMe) => {
-    const base = usedShowMe ? 'Here is the answer. Study it, then carry on.' : 'Correct!';
-    return round?.tieNote ? `${base} ${round.tieNote}` : base;
-  };
-
-  const swapBars = (i, j) => {
-    if (done || round.kind !== 'arrange' || i === j) return;
-    pushHistory();
-    const next = [...work];
-    [next[i], next[j]] = [next[j], next[i]];
-    setWork(next);
-    setFeedback(null);
-  };
-
-  const check = () => {
-    if (done || round.kind !== 'arrange') return;
-    const wrong = work.filter((v, i) => v !== round.target[i]).length;
-    if (wrong === 0) {
-      advance(round.isNoop ? 'Correct! No swaps were needed, so the algorithm can stop here.' : successMessage(false));
-    } else {
-      setMistakes(m => m + 1);
-      setFeedback({ tone: 'error', text: `${round.mistake} (${wrong} bar${wrong === 1 ? ' is' : 's are'} out of place.)` });
-    }
+  const successText = (shown) => {
+    const base = shown ? 'Here is the answer. Study it, then carry on.' : 'Correct!';
+    return round?.successNote ? `${base} ${round.successNote}` : base;
   };
 
   const choose = (answer) => {
-    if (done || round.kind === 'arrange') return;
+    if (done) return;
     if (round.accepts(answer)) {
-      advance(successMessage(false));
+      commit(engine.apply(state, answer), { advanced: 1, message: { tone: 'success', text: successText(false) } });
     } else {
       setMistakes(m => m + 1);
-      setFeedback({ tone: 'error', text: round.mistake });
+      const text = typeof round.mistake === 'function' ? round.mistake(answer) : round.mistake;
+      setFeedback({ tone: 'error', text });
     }
+  };
+
+  const edit = (action) => {
+    if (done || !engine.edit) return;
+    commit(engine.edit(state, action), { resetHint: false });
   };
 
   const hint = () => {
@@ -78,40 +69,52 @@ export function usePracticeSession(rounds) {
       setHintLevel(hintLevel + 1);
       return;
     }
-    // "Show me": apply the correct answer for this round.
-    if (round.kind === 'arrange') {
-      pushHistory();
-      setWork(round.target);
-      setFeedback({ tone: 'success', text: 'This is how the pass ends. Press Check to continue.' });
-      setHintLevel(0);
+    const revealed = engine.reveal?.(state);
+    if (revealed) {
+      commit(revealed, { message: { tone: 'info', text: round.revealNote || 'This is the answer. Check it to continue.' } });
     } else {
-      advance(successMessage(true));
+      commit(engine.apply(state, engine.auto(state)), { advanced: 1, message: { tone: 'info', text: successText(true) } });
     }
+  };
+
+  // Let the algorithm make its own next `count` moves (not counted as hints).
+  // Stops early when the kind of question changes (e.g. search -> trace), so a new phase is never skipped into.
+  const skip = (count = 5) => {
+    if (done) return;
+    let next = state;
+    let moved = 0;
+    while (moved < count && engine.question(next)?.kind === round.kind) {
+      next = engine.apply(next, engine.auto(next));
+      moved++;
+    }
+    setSkipped(s => s + moved);
+    commit(next, { advanced: moved, message: { tone: 'info', text: `Skipped ${moved} step${moved === 1 ? '' : 's'}; the algorithm made its own choices.` } });
   };
 
   const undo = () => {
     if (history.length === 0) return;
     const prev = history[history.length - 1];
     setHistory(history.slice(0, -1));
-    setIndex(prev.index);
-    setWork(prev.work);
+    setState(prev.state);
     setHintLevel(prev.hintLevel);
+    setSteps(prev.steps);
     setFeedback(null);
   };
 
   const restart = () => {
-    setIndex(0);
-    setWork(initialWork);
+    setState(engine.init());
     setHintLevel(0);
     setHistory([]);
+    setSteps(0);
     setMistakes(0);
     setHintsUsed(0);
+    setSkipped(0);
     setFeedback(null);
   };
 
   return {
-    round, index, total: rounds.length, done, work, hintLevel, mistakes, hintsUsed, feedback,
+    state, round, done, steps, hintLevel, mistakes, hintsUsed, skipped, feedback,
     canUndo: history.length > 0,
-    actions: { swapBars, check, choose, hint, undo, restart },
+    actions: { choose, edit, hint, skip, undo, restart },
   };
 }

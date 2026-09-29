@@ -56,13 +56,30 @@ To run the tests against the Vite dev server, temporarily change `baseURL` in `p
 - `SortingView` now uses the shared `BarChart` and `OperationsLog` (leftover de-duplication done).
 - Tests: 9 Playwright tests pass, including bubble sort pass-by-pass with click-to-swap and the quick sort pivot question with the hint ladder. Every algorithm's practice rounds were also checked on 300 random arrays (duplicates, sorted, single value).
 
+### Step 3b — Pathfinding: practice mode + rebuilt view
+- **Practice engine** `src/practice/pathfindingPractice.js` (pure stepper) mirrors `src/algorithms/pathfinding`: up/down/left/right neighbour order, mud costs 5 for Dijkstra and A* only, Manhattan distance.
+  - "Which cell is expanded next?" Any cell tied for the algorithm's priority is accepted (BFS distance, Dijkstra g, A* f = g + h, Greedy h). DFS accepts any unvisited neighbour of the deepest cell on its path.
+  - BFS, Dijkstra and A* then have a **trace the shortest path back** round; any valid predecessor is accepted.
+  - Moves with only one possible cell are applied automatically; small preset grids.
+- **Stepper session:** `usePracticeSession` now drives an engine (`init` / `question` / `apply` / `auto` / optional `reveal` and `edit`) and adds **Skip 5**, which stops at phase changes. Sorting uses it through `createSortingEngine`.
+- **Shared `PracticeShell`** (header and score, prompt and hint, feedback, action bar, summary); Sorting and Pathfinding practice both use it.
+- **Practice UI** `components/practice/PathfindingPractice.jsx`: frontier outlined, numbers on cells (distance / g / f with g + h / h), a side panel showing the real queue, stack or frontier, and a summary comparing your expansions with the algorithm's own.
+- **Pathfinding view rebuilt** on shared components with `components/pathfinding/PathGrid.jsx`:
+  - Drawing tools: Wall, Mud, Erase, move Start, move Target; random walls; clear.
+  - Pointer events, so drawing works on touch screens.
+  - The algorithm re-runs once per stroke instead of on every painted cell.
+  - An inline "no path" notice replaces the old overlay.
+  - Mud is kept (and noted as ignored) when switching to an unweighted algorithm, instead of being deleted.
+- **Checks:**
+  - 11 Playwright tests pass, including drawing plus run-to-end, and A* practice (wrong click, hint ladder, Skip 5 stops at the trace phase, full trace to the summary).
+  - A Node property check plays 200 runs per preset and algorithm with random accepted ties. Every run finishes, BFS, Dijkstra and A* traces are always optimal (checked against an independent Dijkstra), and DFS and Greedy paths are connected.
+
 ## Next steps
 
 The detailed plan for everything left is in **[plan.md](plan.md)**. In short:
 
-1. **3b — Pathfinding** (next): practice mode ("which cell is expanded next?", ties accepted, g/h/f labels, skip ahead, trace the path) and a rebuilt Pathfinding view.
-2. **3c — Graph practice:** queue/stack for BFS/DFS, a real distance table for Dijkstra, pass-by-pass table for Bellman-Ford, edge picking for Kruskal/Prim, SCC grouping for Tarjan.
-3. **3d — Backtracking:** fix `PLACE`/`REMOVE` step types, practice with a Backtrack action, rebuilt view.
-4. **5 — Polish:** restyle quiz/chatbot/modals, mobile and accessibility passes, lint cleanup, README, merge to `main` and deploy.
+1. **3c — Graph practice** (next): queue/stack for BFS/DFS, a real distance table for Dijkstra, pass-by-pass table for Bellman-Ford, edge picking for Kruskal/Prim, SCC grouping for Tarjan.
+2. **3d — Backtracking:** fix `PLACE`/`REMOVE` step types, practice with a Backtrack action, rebuilt view.
+3. **5 — Polish:** restyle quiz/chatbot/modals, mobile and accessibility passes, lint cleanup, README, merge to `main` and deploy.
 
 Still open outside the code: **revoke the Gemini API key** that was hard-coded in the old project fyp repo (`Mohammed-Afshaan/SPIT-Algo-Visualiser`). The local `project fyp` folder and zip have been deleted.
