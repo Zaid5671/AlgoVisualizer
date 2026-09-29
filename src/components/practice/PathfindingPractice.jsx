@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { PathGrid } from '../pathfinding/PathGrid';
+import { PathfindingKey } from '../pathfinding/PathfindingKey';
 import { PracticeShell } from './PracticeShell';
 import { usePracticeSession } from '../../practice/usePracticeSession';
 import { createPathfindingEngine, parsePreset, parseKey, PRACTICE_PRESETS } from '../../practice/pathfindingPractice';
@@ -13,6 +14,13 @@ const INTRO = {
 };
 
 const PANEL_TITLE = { bfs: 'Queue (front → back)', dfs: 'Stack (bottom → top)', dijkstra: 'Frontier (g)', astar: 'Frontier (f = g + h)', greedyBFS: 'Frontier (h)' };
+const PANEL_HELP = {
+  bfs: 'Cells waiting to be expanded, in the order they were found. d = distance from S.',
+  dfs: 'The current path from S. DFS moves on from the top and pops cells off when it gets stuck.',
+  dijkstra: 'Every frontier cell, in the order found, with its cost so far (g). Find the smallest.',
+  astar: 'Every frontier cell, in the order found, with its f = g + h. Find the smallest.',
+  greedyBFS: 'Every frontier cell, in the order found, with h (distance guess to T). Find the smallest.',
+};
 
 const cellName = (k) => {
   const [r, c] = parseKey(k);
@@ -41,11 +49,13 @@ function SidePanel({ algoId, state, valid, hintLevel }) {
   return (
     <aside className="practice-panel">
       <span className="eyebrow">{PANEL_TITLE[algoId]}</span>
+      <p className="practice-panel__help">{PANEL_HELP[algoId]}</p>
       <div className="practice-panel__items">
         {items.length === 0 ? <span className="merge-board__empty">empty</span> : items.map(({ k, text }) => (
           <span key={k} className={`value-chip value-chip--mono ${hint.has(k) ? 'is-hint' : ''}`}>{text}</span>
         ))}
       </div>
+      <p className="practice-panel__help">r = row, c = column, counting from 0 at the top-left.</p>
     </aside>
   );
 }
@@ -82,7 +92,7 @@ function PathfindingSession({ algorithm, presetId, onWatch }) {
     const cell = state.cells[`${r},${c}`];
     if (!cell || algoId === 'dfs') return null;
     if (cell.status === 'frontier') {
-      if (algoId === 'astar') return <><b>{cell.g + cell.h}</b><small>{cell.g}+{cell.h}</small></>;
+      if (algoId === 'astar') return <><b>{cell.g + cell.h}</b><small>g{cell.g}+h{cell.h}</small></>;
       if (algoId === 'bfs') return cell.depth;
       if (algoId === 'dijkstra') return cell.g;
       return cell.h;
@@ -125,20 +135,23 @@ function PathfindingSession({ algorithm, presetId, onWatch }) {
   const status = !round ? null : round.kind === 'trace' ? 'trace the path' : `${state.expanded.length} expanded`;
 
   return (
-    <PracticeShell
-      session={session}
-      status={status}
-      intro={INTRO[algoId]}
-      canSkip={round?.kind !== 'trace'}
-      footnote={round ? (round.kind === 'trace' ? 'Click a neighbour of the highlighted cell.' : 'Click an outlined cell. Skip 5 lets the algorithm move for you.') : null}
-      summary={summary}
-      onWatch={onWatch}
-    >
-      <div className="practice-split">
-        <PathGrid grid={input.grid} start={input.start} target={input.target} stateOf={stateOf} labelOf={labelOf} onCellClick={handleClick} size="lg" />
-        {round?.kind !== 'trace' && <SidePanel algoId={algoId} state={state} valid={round?.valid || []} hintLevel={hintLevel} />}
-      </div>
-    </PracticeShell>
+    <>
+      <PracticeShell
+        session={session}
+        status={status}
+        intro={INTRO[algoId]}
+        canSkip={round?.kind !== 'trace'}
+        footnote={round ? (round.kind === 'trace' ? 'Click a neighbour of the highlighted cell.' : 'Click an outlined cell. Skip 5 lets the algorithm move for you.') : null}
+        summary={summary}
+        onWatch={onWatch}
+      >
+        <div className="practice-split">
+          <PathGrid grid={input.grid} start={input.start} target={input.target} stateOf={stateOf} labelOf={labelOf} onCellClick={handleClick} size="lg" />
+          {round?.kind !== 'trace' && <SidePanel algoId={algoId} state={state} valid={round?.valid || []} hintLevel={hintLevel} />}
+        </div>
+      </PracticeShell>
+      {!session.done && <PathfindingKey algoId={algoId} practice />}
+    </>
   );
 }
 
