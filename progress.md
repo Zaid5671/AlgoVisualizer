@@ -1,6 +1,6 @@
 # Redesign progress
 
-UI and feature redesign of SPIT Algo Visualizer. All work is on the **`ui-redesign`** branch; `main` is untouched.
+UI and feature redesign of SPIT Algo Visualizer. The work was done on the **`ui-redesign`** branch and merged into `main` (fast-forward to `4a92b02`); both are pushed to GitHub.
 
 ## How to run and test
 
@@ -146,7 +146,7 @@ To run the tests against the Vite dev server, temporarily change `baseURL` in `p
 
 The detailed plan for everything left is in **[plan.md](plan.md)**. In short:
 
-1. **Merge and deploy** (needs the team's go-ahead): push `ui-redesign`, merge into `main`, deploy to Vercel with `GEMINI_API_KEY`, test the tutor in production.
+1. **Deploy:** `main` is merged and pushed, but the Vercel project is not connected to the GitHub repo, so the live site still runs the old version. Either connect the repo in Vercel (auto-deploys on every push to `main`) or run `vercel --prod`. Make sure `GEMINI_API_KEY` is set in Vercel, then test the tutor on the live site.
 2. **6 — Colour scheme** (on hold): pick a brand colour and separate interface colours from algorithm colours. Options and spec are in plan.md; preview in `docs/colour-preview.html`.
 3. **Landing page leftovers:** real team photos and the GitHub link (both in `src/data/site.js`).
 
