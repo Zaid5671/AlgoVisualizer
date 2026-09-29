@@ -91,11 +91,26 @@ To run the tests against the Vite dev server, temporarily change `baseURL` in `p
   - 14 Playwright tests pass, including Dijkstra (wrong pick, hint ladder, finish), Kruskal / Bellman-Ford / Tarjan run to completion, and the negative-weight blocker.
   - A Node property check ran about 2,700 random graphs with random accepted ties. It matched independent references for every algorithm: shortest paths (plain Bellman-Ford relaxation, including negative-cycle detection), MST weight (Prim per component), SCCs (Kosaraju), and BFS depth order.
 
+### Step 3d — Backtracking: practice mode + rebuilt view
+- **Step types fixed:** the N-Queens, Sudoku and colouring generators now record `PLACE` / `REMOVE` instead of `SWAP` for both. Colouring messages use node letters and "colour 1–3".
+- **Practice engine** `src/practice/backtrackingPractice.js`: one generic stepper plus three problem definitions (N-Queens by column, Sudoku empties in reading order, colouring nodes in order).
+  - Place any safe value not yet tried in this slot, or press **Backtrack** when none is left.
+  - Backtracking too early is a mistake, and so is placing a clashing value. Each mistake explains the broken rule ("Row 0 already has a 1", "the queen at row 0, column 0 attacks this square diagonally", "Neighbour B already has colour 2").
+- **Practice UI** `components/practice/BacktrackingPractice.jsx`:
+  - N-Queens: click a square in the highlighted column; "Show where" shades attacked squares and highlights safe ones.
+  - Sudoku: a digit pad for the highlighted cell.
+  - Colouring: colour buttons.
+  - All three share a Backtrack button, a "choices so far" panel, dead-end markers, and a summary (solved, or "no solution exists").
+- **Rebuilt view** `views/BacktrackingView.jsx` with `components/backtracking/Boards.jsx` (square queens and Sudoku boards), colours marking try / place / backtrack, board size / empty cells / colours controls, and a log with place / remove filters plus placement and backtrack counts.
+- **"How to read this board" guide** (`components/backtracking/BacktrackingKey.jsx`): queen attacks, current column, attacked and tried squares, Sudoku rules, givens vs guesses, colouring rules, and what backtracking means.
+- **Checks:**
+  - 17 Playwright tests pass, including N-Queens watch-mode solve, N-Queens practice (early-backtrack and diagonal-attack mistakes, then solve), and Sudoku and colouring practice to completion.
+  - A Node property check covered N-Queens n = 2–8, 200 Sudokus with 3–16 blanks and 400 random colouring graphs, with random accepted moves. Every run ends, every solution is valid, and "no solution" matches brute force exactly.
+
 ## Next steps
 
 The detailed plan for everything left is in **[plan.md](plan.md)**. In short:
 
-1. **3d — Backtracking** (next): fix `PLACE`/`REMOVE` step types, practice with a Backtrack action, rebuilt view.
-2. **5 — Polish:** restyle quiz/chatbot/modals, mobile and accessibility passes, lint cleanup, README, merge to `main` and deploy.
+1. **5 — Polish** (next): restyle quiz/chatbot/modals, mobile and accessibility passes, lint cleanup, README, merge to `main` and deploy.
 
 Still open outside the code: **revoke the Gemini API key** that was hard-coded in the old project fyp repo (`Mohammed-Afshaan/SPIT-Algo-Visualiser`). The local `project fyp` folder and zip have been deleted.

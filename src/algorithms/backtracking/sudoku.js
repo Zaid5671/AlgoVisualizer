@@ -61,13 +61,13 @@ export function generateSudokuSnapshots({ initialBoard }) {
 
       if (isSafe(row, col, num)) {
         board[row][col] = num;
-        record(StepTypes.SWAP, [{ r: row, c: col }], `Valid! Placed ${num} at row ${row}, col ${col}`, 3);
+        record(StepTypes.PLACE, [{ r: row, c: col }], `Valid! Placed ${num} at row ${row}, col ${col}`, 3);
 
         if (solveSudokuUtil()) return true;
 
         // Backtrack
         board[row][col] = 0;
-        record(StepTypes.SWAP, [{ r: row, c: col }], `Dead end. Backtracking from row ${row}, col ${col}. Erased ${num}.`, 5);
+        record(StepTypes.REMOVE, [{ r: row, c: col }], `Dead end. Backtracking from row ${row}, col ${col}. Erased ${num}.`, 5);
       }
     }
     return false;

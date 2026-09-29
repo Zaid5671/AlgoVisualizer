@@ -43,13 +43,13 @@ export function generateNQueensSnapshots({ boardSize }) {
       if (isSafe(i, col)) {
         // Place queen
         board[i][col] = 1;
-        record(StepTypes.SWAP, [{ r: i, c: col }], `Safe! Placed Queen at row ${i}, col ${col}`, 2);
+        record(StepTypes.PLACE, [{ r: i, c: col }], `Safe! Placed Queen at row ${i}, col ${col}`, 2);
 
         if (solveNQUtil(col + 1)) return true;
 
         // Backtrack
         board[i][col] = 0;
-        record(StepTypes.SWAP, [{ r: i, c: col }], `Dead end reached! Backtracking. Removed Queen from row ${i}, col ${col}`, 6);
+        record(StepTypes.REMOVE, [{ r: i, c: col }], `Dead end reached! Backtracking. Removed Queen from row ${i}, col ${col}`, 6);
       } else {
         record(StepTypes.COMPARE, [{ r: i, c: col }], `Collision detected at row ${i}, col ${col}.`, 1);
       }

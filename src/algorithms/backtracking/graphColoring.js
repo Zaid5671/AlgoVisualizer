@@ -1,4 +1,5 @@
 import { StepTypes } from '../../engine/stepTypes';
+import { nodeLabel } from '../../utils/nodeLabel';
 
 export function generateGraphColoringSnapshots({ nodes, edges, m }) {
   // m is the number of colors allowed (e.g. 3)
@@ -35,19 +36,19 @@ export function generateGraphColoringSnapshots({ nodes, edges, m }) {
     const currentNode = nodes[nodeIndex].id;
 
     for (let c = 0; c < m; c++) {
-      record(StepTypes.COMPARE, [currentNode], `Testing color ${c} on node ${currentNode}`, 1);
+      record(StepTypes.COMPARE, [currentNode], `Testing colour ${c + 1} on node ${nodeLabel(currentNode)}`, 1);
 
       if (isSafe(currentNode, c)) {
         colorAssignment[currentNode] = c;
-        record(StepTypes.SWAP, [currentNode], `Safe! Assigned color ${c} to node ${currentNode}`, 3);
+        record(StepTypes.PLACE, [currentNode], `Safe! Assigned colour ${c + 1} to node ${nodeLabel(currentNode)}`, 3);
 
         if (solveColoringUtil(nodeIndex + 1)) return true;
 
         // Backtrack
         delete colorAssignment[currentNode];
-        record(StepTypes.SWAP, [currentNode], `Dead end reached. Backtracking. Erased color from node ${currentNode}`, 5);
+        record(StepTypes.REMOVE, [currentNode], `Dead end reached. Backtracking. Erased the colour from node ${nodeLabel(currentNode)}`, 5);
       } else {
-        record(StepTypes.COMPARE, [currentNode], `Conflict! Color ${c} is already used by a neighbor.`, 1);
+        record(StepTypes.COMPARE, [currentNode], `Conflict! Colour ${c + 1} is already used by a neighbour of ${nodeLabel(currentNode)}.`, 1);
       }
     }
 
