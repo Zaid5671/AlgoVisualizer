@@ -1,4 +1,5 @@
 import { StepTypes } from '../../engine/stepTypes';
+import { nodeLabel } from '../../utils/nodeLabel';
 
 export function generateBFSGraphSnapshots({ nodes, edges, startNodeId }) {
   const snapshots = [];
@@ -25,7 +26,7 @@ export function generateBFSGraphSnapshots({ nodes, edges, startNodeId }) {
 
   while (queue.length > 0) {
     const currentId = queue.shift();
-    record(StepTypes.COMPARE, [currentId], [], `Exploring node ${currentId}`, 3);
+    record(StepTypes.COMPARE, [currentId], [], `Exploring node ${nodeLabel(currentId)}`, 3);
 
     // Find all edges connected to currentId
     const adjacentEdges = edges.filter(e => e.source === currentId || (!e.isDirected && e.target === currentId));
@@ -33,7 +34,7 @@ export function generateBFSGraphSnapshots({ nodes, edges, startNodeId }) {
     for (const edge of adjacentEdges) {
       const neighborId = edge.source === currentId ? edge.target : edge.source;
       
-      record(StepTypes.COMPARE, [currentId, neighborId], [edge.id], `Checking edge to neighbor ${neighborId}`, 4);
+      record(StepTypes.COMPARE, [currentId, neighborId], [edge.id], `Checking edge to neighbor ${nodeLabel(neighborId)}`, 4);
 
       if (!visited.has(neighborId)) {
         visited.add(neighborId);
@@ -41,9 +42,9 @@ export function generateBFSGraphSnapshots({ nodes, edges, startNodeId }) {
         visitedEdges.push(edge.id);
         queue.push(neighborId);
         
-        record(StepTypes.SWAP, [neighborId], [edge.id], `Discovered unvisited node ${neighborId}, adding to queue`, 8);
+        record(StepTypes.SWAP, [neighborId], [edge.id], `Discovered unvisited node ${nodeLabel(neighborId)}, adding to queue`, 8);
       } else {
-        record(StepTypes.COMPARE, [neighborId], [], `Node ${neighborId} is already visited`, 6);
+        record(StepTypes.COMPARE, [neighborId], [], `Node ${nodeLabel(neighborId)} is already visited`, 6);
       }
     }
   }

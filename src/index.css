@@ -758,6 +758,157 @@ button.chip.active { border-color: var(--ink); color: var(--ink); background: va
 .algo-info__card a:hover { text-decoration: underline; }
 
 /* =========================================================
+   GRAPH EDITOR
+   ========================================================= */
+.segmented button { display: inline-flex; align-items: center; gap: 0.35rem; }
+
+.graph-tools { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+
+.graph-canvas {
+  border-radius: var(--radius-sm);
+  background:
+    radial-gradient(circle, #e9e9e9 1px, transparent 1px) 0 0 / 22px 22px,
+    var(--surface);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+.graph-canvas svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 520px;
+  touch-action: none;
+  user-select: none;
+}
+.graph-canvas.tool-node svg { cursor: copy; }
+.graph-canvas.tool-edge svg { cursor: crosshair; }
+.graph-canvas.tool-delete .graph-node,
+.graph-canvas.tool-delete .graph-edge { cursor: not-allowed; }
+
+.graph-node { cursor: grab; }
+.graph-canvas.tool-none .graph-node { cursor: pointer; }
+.graph-canvas.tool-edge .graph-node { cursor: crosshair; }
+.graph-node circle {
+  fill: var(--surface);
+  stroke: #c9c9c9;
+  stroke-width: 2.5;
+  transition: fill 0.2s ease, stroke 0.2s ease;
+}
+.graph-node:hover circle { stroke: var(--ink); }
+.graph-node__label { font-family: var(--font-sans); font-size: 14px; font-weight: 700; fill: var(--ink); pointer-events: none; }
+.graph-node__tag { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.1em; fill: var(--pink); pointer-events: none; }
+.graph-node.is-visited circle { fill: var(--blue-dim); stroke: var(--blue); }
+.graph-node.is-active circle { fill: var(--yellow-dim); stroke: var(--yellow); stroke-width: 3.5; }
+.graph-node.is-start circle { stroke: var(--pink); stroke-width: 3.5; }
+.graph-node.is-selected circle { stroke: var(--ink); stroke-dasharray: 4 3; stroke-width: 3; }
+.graph-node.is-pending circle { stroke: var(--blue); stroke-width: 4; fill: var(--blue-dim); }
+
+.graph-edge { cursor: pointer; }
+.graph-edge__hit { stroke: transparent; stroke-width: 16; }
+.graph-edge__line { stroke: #d6d6d6; stroke-width: 2.5; transition: stroke 0.2s ease; }
+.graph-edge:hover .graph-edge__line { stroke: #9a9a9a; }
+.graph-edge.is-visited .graph-edge__line { stroke: var(--ink); stroke-width: 3; }
+.graph-edge.is-active .graph-edge__line { stroke: var(--pink); stroke-width: 3.5; }
+.graph-edge.is-selected .graph-edge__line { stroke: var(--ink); stroke-dasharray: 6 4; stroke-width: 3; }
+.graph-edge__weight rect { fill: var(--surface); stroke: var(--border-strong); }
+.graph-edge__weight text { font-family: var(--font-mono); font-size: 11px; font-weight: 700; fill: #555; }
+.graph-edge.is-active .graph-edge__weight rect { stroke: var(--pink); }
+.graph-arrow--default { fill: #bdbdbd; }
+.graph-arrow--visited, .graph-arrow--selected { fill: var(--ink); }
+.graph-arrow--active { fill: var(--pink); }
+.graph-rubber-band { stroke: var(--blue); stroke-width: 2; stroke-dasharray: 5 4; pointer-events: none; }
+.graph-empty { font-family: var(--font-sans); font-size: 15px; fill: var(--ink-faint); }
+
+.switch { display: inline-flex; align-items: center; gap: 0.5rem; font-weight: 600; font-size: 0.82rem; cursor: pointer; user-select: none; }
+.switch input { position: absolute; opacity: 0; pointer-events: none; }
+.switch__track {
+  position: relative;
+  width: 34px;
+  height: 20px;
+  border-radius: var(--radius-pill);
+  background: var(--border-strong);
+  transition: background 0.15s ease;
+}
+.switch__track::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.15s ease;
+}
+.switch input:checked + .switch__track { background: var(--ink); }
+.switch input:checked + .switch__track::after { transform: translateX(14px); }
+.switch input:focus-visible + .switch__track { outline: 2px solid var(--blue); outline-offset: 2px; }
+.switch.is-locked { cursor: not-allowed; opacity: 0.6; }
+
+.inspector {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3rem 0.35rem 0.3rem 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--surface-muted);
+}
+.inspector__title { font-weight: 700; font-size: 0.85rem; margin-right: 0.25rem; }
+.inspector__field { display: inline-flex; align-items: center; gap: 0.4rem; font-family: var(--font-mono); font-size: 0.72rem; color: var(--ink-dim); }
+
+.graph-issues { list-style: none; display: flex; flex-direction: column; gap: 0.4rem; }
+.graph-issue { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.8rem; border-radius: var(--radius-sm); font-size: 0.84rem; }
+.graph-issue--warn { background: var(--yellow-dim); color: #7a5400; }
+.graph-issue--info { background: var(--blue-dim); color: #1d4ba8; }
+
+.stage__hint { font-size: 0.8rem; color: var(--ink-dim); }
+
+/* Form fields */
+.text-input--sm { width: 5.5rem; padding: 0.3rem 0.6rem; }
+.text-input--area { border-radius: var(--radius-sm); resize: vertical; width: 100%; line-height: 1.6; }
+.text-input--select { font-family: var(--font-sans); font-weight: 600; font-size: 0.8rem; padding: 0.35rem 0.8rem; cursor: pointer; }
+.field { display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 1rem; }
+.field__label { font-weight: 600; font-size: 0.88rem; }
+.field__hint { font-size: 0.8rem; color: var(--ink-dim); }
+.field__errors {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.7rem 0.9rem;
+  border-radius: var(--radius-sm);
+  background: var(--pink-dim);
+  color: #8a1030;
+  font-size: 0.82rem;
+}
+
+/* Modal */
+.modal-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(2px);
+}
+.modal {
+  width: 100%;
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  animation: fadeIn 0.15s ease-out;
+}
+.modal__header { display: flex; align-items: center; justify-content: space-between; padding: 1.1rem 1.25rem 0.5rem; }
+.modal__header h3 { font-size: 1.05rem; font-weight: 700; }
+.modal__body { padding: 0.5rem 1.25rem; }
+.modal__footer { display: flex; justify-content: flex-end; gap: 0.5rem; padding: 0.75rem 1.25rem 1.25rem; }
+
+/* =========================================================
    LEGACY VIEW STYLES (pathfinding / graph / backtracking)
    ========================================================= */
 .btn-use-this:not(.btn) {

@@ -1,4 +1,5 @@
 import { StepTypes } from '../../engine/stepTypes';
+import { nodeLabel } from '../../utils/nodeLabel';
 
 export function generatePrimsSnapshots({ nodes, edges, startNodeId }) {
   const snapshots = [];
@@ -58,7 +59,7 @@ export function generatePrimsSnapshots({ nodes, edges, startNodeId }) {
     visitedEdges.push(cheapestEdge.id);
     totalCost += cheapestEdge.weight;
 
-    record(StepTypes.SWAP, [newNeighbor], [cheapestEdge.id], `Added node ${newNeighbor} to the growing tree!`, 5);
+    record(StepTypes.SWAP, [newNeighbor], [cheapestEdge.id], `Added node ${nodeLabel(newNeighbor)} to the growing tree!`, 5);
   }
 
   record(StepTypes.END, [], [], `Prim's MST Complete! Total cost: ${totalCost}`, -1);

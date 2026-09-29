@@ -1,4 +1,5 @@
 import { StepTypes } from '../../engine/stepTypes';
+import { nodeLabel } from '../../utils/nodeLabel';
 
 export function generateTarjansSnapshots({ nodes, edges }) {
   const snapshots = [];
@@ -39,7 +40,7 @@ export function generateTarjansSnapshots({ nodes, edges }) {
     ids[at] = low[at] = idCounter++;
     visitedNodes.add(at);
 
-    record(StepTypes.COMPARE, [at], [], `Visiting node ${at}. Assigned ID and Low-Link: ${ids[at]}`, 1);
+    record(StepTypes.COMPARE, [at], [], `Visiting node ${nodeLabel(at)}. Assigned ID and Low-Link: ${ids[at]}`, 1);
 
     // Visit all neighbors (directed edges only)
     const outEdges = edges.filter(e => e.source === at);
@@ -48,21 +49,21 @@ export function generateTarjansSnapshots({ nodes, edges }) {
       const to = edge.target;
       visitedEdges.push(edge.id);
       
-      record(StepTypes.COMPARE, [at, to], [edge.id], `Traversing directed edge to ${to}`, 3);
+      record(StepTypes.COMPARE, [at, to], [edge.id], `Traversing directed edge to ${nodeLabel(to)}`, 3);
 
       if (ids[to] === -1) {
         dfs(to);
         low[at] = Math.min(low[at], low[to]);
-        record(StepTypes.SWAP, [at], [edge.id], `Backtracking to ${at}. Updated Low-Link to ${low[at]}`, 6);
+        record(StepTypes.SWAP, [at], [edge.id], `Backtracking to ${nodeLabel(at)}. Updated Low-Link to ${low[at]}`, 6);
       } else if (onStack[to]) {
         low[at] = Math.min(low[at], ids[to]);
-        record(StepTypes.SWAP, [at], [edge.id], `Node ${to} is on stack! Cycle found. Updated Low-Link of ${at} to ${low[at]}`, 8);
+        record(StepTypes.SWAP, [at], [edge.id], `Node ${nodeLabel(to)} is on stack! Cycle found. Updated Low-Link of ${nodeLabel(at)} to ${low[at]}`, 8);
       }
     }
 
     // After visiting all neighbors, if we're the root of an SCC
     if (ids[at] === low[at]) {
-      record(StepTypes.COMPARE, [at], [], `Node ${at} is the root of an SCC (ID == Low-Link). Popping stack!`, 11);
+      record(StepTypes.COMPARE, [at], [], `Node ${nodeLabel(at)} is the root of an SCC (ID == Low-Link). Popping stack!`, 11);
       let sccNodes = [];
       while (true) {
         const node = stack.pop();
@@ -71,7 +72,7 @@ export function generateTarjansSnapshots({ nodes, edges }) {
         if (node === at) break;
       }
       sccCount++;
-      record(StepTypes.SWAP, sccNodes, [], `Found Strongly Connected Component #${sccCount}: [${sccNodes.join(', ')}]`, 12);
+      record(StepTypes.SWAP, sccNodes, [], `Found Strongly Connected Component #${sccCount}: [${sccNodes.map(nodeLabel).join(', ')}]`, 12);
     }
   };
 
