@@ -29,6 +29,7 @@ The old step 4 ("migrate the remaining views") is folded into 3b and 3d. The pra
 5. **Keep sessions short:** about 40 decisions at most. Use smaller inputs and a "skip ahead" action for repetitive stretches.
 6. **Click-first interactions.** Everything must work by clicking (touch screens); drag is optional.
 7. **Show the numbers the algorithm uses** (queue, stack, distances, g/h/f) so the learner decides with the same information.
+8. **Explain every term, colour and number on screen.** Assume the learner doesn't know words like "frontier", "relax" or "SCC". Each practice mode gets a "How to read this" guide with sample visuals (like `PathfindingKey`), numbers are self-labelled where possible (e.g. `g2+h10`), and side panels say what they hold.
 
 ## Architecture
 
