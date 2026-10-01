@@ -28,7 +28,13 @@ export const ALGORITHMS = {
     id: 'bubbleSort',
     name: 'Bubble Sort',
     category: 'Sorting',
-    description: 'Repeatedly steps through the list, swapping adjacent elements that are out of order. Stable. Best case hits O(n) when the array is already sorted and a pass makes zero swaps.',
+    description: 'A simple comparison-based sort that repeatedly passes through the list and swaps adjacent elements that are out of order. It is stable and sorts in place, and it can stop after a single O(n) pass when the input is already sorted.',
+    properties: [
+      "It only ever swaps two neighbouring elements at a time.",
+      "If the list is already sorted, it notices after one pass and stops.",
+      "It needs no extra memory, because it sorts the array where it is.",
+      "It is too slow for large lists and is mainly used for teaching."
+    ],
     applications: [
       "Teaching comparison sorting",
       "Small or nearly sorted lists",
@@ -63,7 +69,13 @@ export const ALGORITHMS = {
     id: 'selectionSort',
     name: 'Selection Sort',
     category: 'Sorting',
-    description: 'Divides the array into a sorted and unsorted region. Repeatedly selects the smallest element from the unsorted region and swaps it into the sorted region. Not stable.',
+    description: 'An in-place comparison sort that splits the array into a sorted prefix and an unsorted suffix. On each pass it selects the minimum of the unsorted part and swaps it to the end of the prefix. It makes at most n − 1 swaps but is not stable.',
+    properties: [
+      "It always scans the whole unsorted part, even when the list is already sorted.",
+      "It makes very few swaps, at most one per position.",
+      "It needs no extra memory.",
+      "It is useful when moving data is much more costly than comparing it."
+    ],
     applications: ["Small datasets", "Memory-constrained systems", "Teaching basic sorting"],
     video: "https://www.youtube.com/results?search_query=selection+sort+algorithm",
         complexityDetails: {
@@ -95,7 +107,13 @@ export const ALGORITHMS = {
     id: 'insertionSort',
     name: 'Insertion Sort',
     category: 'Sorting',
-    description: 'Builds the sorted array one element at a time by picking the next element and inserting it into its correct position among the already sorted elements. Stable.',
+    description: 'Builds the sorted output one element at a time by inserting each new element into its correct position among those already sorted. It is stable, sorts in place, and runs in near-linear time on small or nearly sorted inputs.',
+    properties: [
+      "It works like sorting a hand of playing cards, inserting one card at a time.",
+      "It is very fast on lists that are already almost sorted.",
+      "It can sort new items as they arrive, without waiting for the whole list.",
+      "Fast sorting functions in real programming languages use it for small sections of data."
+    ],
     applications: ["Small datasets", "Nearly sorted data", "Online sorting"],
     video: "https://www.youtube.com/results?search_query=insertion+sort+algorithm",
         complexityDetails: {
@@ -125,7 +143,13 @@ export const ALGORITHMS = {
     id: 'shellSort',
     name: 'Shell Sort',
     category: 'Sorting',
-    description: 'An optimization of Insertion Sort that allows the exchange of items that are far apart. It sorts elements at a specific interval, gradually reducing the interval (gap) until it reaches 1.',
+    description: 'A generalization of Insertion Sort that first compares and swaps elements a fixed gap apart, then shrinks the gap until it reaches 1. Moving elements across long distances early on greatly reduces the work left for the final insertion pass.',
+    properties: [
+      "It first sorts elements that are far apart, then closes the gap step by step.",
+      "This app halves the gap each round: n/2, n/4, … down to 1.",
+      "Moving elements over long distances early leaves very little work for the final round.",
+      "It needs no extra memory, so it suits devices with little RAM."
+    ],
     applications: ["Medium-sized datasets", "Embedded systems", "Optimized insertion sort variants"],
     video: "https://www.youtube.com/results?search_query=shell+sort+algorithm",
         complexityDetails: {
@@ -157,7 +181,13 @@ export const ALGORITHMS = {
     id: 'mergeSort',
     name: 'Merge Sort',
     category: 'Sorting',
-    description: 'Divides the array into halves, recursively sorts them, and then merges the sorted halves. Stable. Guarantees O(n log n) performance regardless of the input distribution.',
+    description: 'A divide-and-conquer sort that recursively splits the array in half, sorts each half, and merges the two sorted halves. It is stable and runs in O(n log n) time on every input, at the cost of O(n) extra space.',
+    properties: [
+      "It takes the same O(n log n) time whatever the input looks like.",
+      "It needs extra memory the same size as the array to merge the halves.",
+      "Equal elements keep their original order, which matters when sorting records by more than one field.",
+      "It is used to sort huge files that don't fit in memory, and to sort linked lists."
+    ],
     applications: ["Large datasets", "External sorting", "Stable sorting requirements"],
     video: "https://www.youtube.com/results?search_query=merge+sort+algorithm",
         complexityDetails: {
@@ -197,7 +227,13 @@ function merge(arr, left, mid, right) {
     id: 'quickSort',
     name: 'Quick Sort',
     category: 'Sorting',
-    description: 'Picks an element as pivot and partitions the given array around the picked pivot. Highly efficient in practice.',
+    description: 'A divide-and-conquer sort that picks a pivot, partitions the array into elements smaller and larger than it, and recursively sorts each part. It averages O(n log n) and is one of the fastest sorts in practice, though poor pivot choices can push it to O(n²).',
+    properties: [
+      "It is usually the fastest sorting algorithm in practice.",
+      "This app always uses the last element as the pivot, so an already-sorted list becomes its slowest case, O(n²).",
+      "It needs almost no extra memory.",
+      "The built-in sort functions of C and C++ are based on it."
+    ],
     applications: ["General-purpose sorting", "Language standard libraries", "Large, randomized datasets"],
     video: "https://www.youtube.com/results?search_query=quick+sort+algorithm",
         complexityDetails: {
@@ -237,7 +273,13 @@ function partition(arr, low, high) {
     id: 'heapSort',
     name: 'Heap Sort',
     category: 'Sorting',
-    description: 'A comparison-based sorting technique based on Binary Heap data structure. It builds a max-heap and repeatedly extracts the maximum element.',
+    description: 'An in-place comparison sort that arranges the array into a binary max-heap, then repeatedly moves the maximum to the end and restores the heap. It guarantees O(n log n) time with O(1) extra space but is not stable.',
+    properties: [
+      "It always finishes in O(n log n) time, with no slow worst case.",
+      "It needs no extra memory.",
+      "It is usually a little slower than Quick Sort in practice, because it jumps around in memory.",
+      "It is used as a safety fallback when Quick Sort starts running slowly."
+    ],
     applications: ["Priority queues", "Systems with memory constraints", "Guaranteed O(n log n) needs"],
     video: "https://www.youtube.com/results?search_query=heap+sort+algorithm",
         complexityDetails: {
@@ -277,7 +319,13 @@ function heapify(arr, size, rootIndex) {
     id: 'radixSort',
     name: 'Radix Sort',
     category: 'Sorting',
-    description: 'A non-comparative sorting algorithm. It avoids comparison by creating and distributing elements into buckets according to their radix (digits).',
+    description: 'A non-comparative integer sort that processes keys one digit at a time, from least to most significant, using a stable bucket pass for each digit. It runs in O(d·(n + k)) time, where d is the number of digits and k is the base.',
+    properties: [
+      "It never compares two numbers directly. It groups them by their digits instead.",
+      "This app sorts one digit at a time, from the ones place upward, in base 10.",
+      "It works only on whole, non-negative numbers.",
+      "It is very fast for sorting things like IDs, phone numbers or dates."
+    ],
     applications: ["Sorting large integers", "String sorting", "Fixed-length keys"],
     video: "https://www.youtube.com/results?search_query=radix+sort+algorithm",
         complexityDetails: {
@@ -316,7 +364,12 @@ for (let exp = 1; floor(max / exp) > 0; exp *= 10) {
     id: 'bfs',
     name: 'Breadth-First Search',
     category: 'Pathfinding',
-    description: 'Explores equally in all directions. Guarantees the shortest path on an unweighted grid.',
+    description: 'An uninformed search that expands the grid level by level, visiting every cell at distance d before any cell at distance d + 1. On an unweighted grid it is guaranteed to find the shortest path.',
+    properties: [
+      "It is ideal when every move has the same cost.",
+      "Once a cell is reached for the first time, there is no need to find another longer route to it.",
+      "It explores all positions at the same distance before moving farther away from the start."
+    ],
     applications: ["Shortest path in unweighted grids", "Peer-to-peer networks", "Social network connections"],
     video: "https://www.youtube.com/results?search_query=breadth+first+search",
         complexityDetails: {
@@ -350,7 +403,13 @@ while (!queue.isEmpty()) {
     id: 'dijkstra',
     name: 'Dijkstra\'s Algorithm',
     category: 'Pathfinding',
-    description: 'The father of pathfinding. Explores based on distance. Because our initial grid will be unweighted (just walls and empty space), Dijkstra will visibly behave exactly like BFS. This is an excellent educational demonstration of how they are mathematically equivalent without weights!',
+    description: 'A shortest-path algorithm that always expands the unvisited node with the smallest known distance from the start. It is guaranteed to find the optimal path when all edge weights are non-negative. On an unweighted grid it explores in the same order as BFS.',
+    properties: [
+      "It always expands the cell that is cheapest to reach so far.",
+      "It takes mud into account, where each mud cell costs 5, and always finds the cheapest path.",
+      "It searches in every direction, because it doesn't know where the target is.",
+      "It is used in road maps and in routing data across the internet."
+    ],
     applications: ["GPS routing", "Network routing protocols", "Mapping applications"],
     video: "https://www.youtube.com/results?search_query=dijkstra+algorithm",
         complexityDetails: {
@@ -386,7 +445,13 @@ while (unvisitedNodes.length > 0) {
     id: 'astar',
     name: 'A* Search',
     category: 'Pathfinding',
-    description: 'The industry standard. Uses a heuristic (guessing the distance to the target) to prioritize promising nodes. Its speed depends heavily on the heuristic and the grid complexity.',
+    description: 'An informed search that ranks nodes by f(n) = g(n) + h(n): the actual cost from the start plus a heuristic estimate of the remaining cost to the target. With an admissible heuristic it finds the shortest path while typically exploring far fewer nodes than Dijkstra.',
+    properties: [
+      "It combines the distance already travelled with a guess of the distance left to the target.",
+      "This app guesses using Manhattan distance: rows apart plus columns apart.",
+      "It always finds the cheapest path, while usually checking far fewer cells than Dijkstra.",
+      "It is the standard pathfinding method in video games, robots and GPS apps."
+    ],
     applications: ["Game AI pathfinding", "Robot navigation", "Real-time routing"],
     video: "https://www.youtube.com/results?search_query=a+star+pathfinding",
         complexityDetails: {
@@ -424,7 +489,13 @@ while (openSet.length > 0) {
     id: 'dfs',
     name: 'Depth-First Search',
     category: 'Pathfinding',
-    description: 'A terrible algorithm for pathfinding, but amazing to visualize because it blindly plunges down one path until it hits a dead end, then backtracks.',
+    description: 'An uninformed search that follows each branch as far as it can before backtracking to the most recent unexplored option. It uses little memory but gives no guarantee that the path it finds is the shortest.',
+    properties: [
+      "It follows one direction as far as it can, then backs up and tries another.",
+      "It will find a path if one exists, but usually not the shortest.",
+      "It ignores mud.",
+      "It is used to generate mazes and to check whether two points are connected at all."
+    ],
     applications: ["Maze generation and solving", "Topological sorting", "Cycle detection"],
     video: "https://www.youtube.com/results?search_query=depth+first+search",
         complexityDetails: {
@@ -459,7 +530,19 @@ while (!stack.isEmpty()) {
     id: 'greedyBFS',
     name: 'Greedy Best-First',
     category: 'Pathfinding',
-    description: 'A faster version of A* that relies *only* on the heuristic. It is blazing fast but doesn\'t guarantee the shortest path.',
+    description: 'An informed search that always expands the node whose heuristic estimate to the target is lowest, ignoring the distance already travelled. It is often very fast but does not guarantee the shortest path.',
+    properties: [
+      "It always moves toward whichever cell looks closest to the target.",
+      "It ignores how far it has already travelled.",
+      "It is often the fastest to reach the target, but walls can lead it into long detours.",
+      "It is used when a quick answer matters more than the best answer, as in simple game AI."
+    ],
+    applications: [
+      "Fast game AI pathfinding",
+      "Real-time robot navigation",
+      "Quick rough solutions to puzzles"
+    ],
+    video: "https://www.youtube.com/results?search_query=greedy+best+first+search",
         complexityDetails: {
       best: "O(1) - Finds the target immediately if it is the starting node.",
       avg: "O(E log V) - Extremely fast in open spaces as it blindly follows the heuristic straight to the target.",
@@ -491,7 +574,13 @@ while (unvisitedNodes.length > 0) {
     id: 'bfsGraph',
     name: 'Breadth-First Search (Graph)',
     category: 'Graph',
-    description: 'Explores an abstract graph equally in all directions, radiating outwards from the start node.',
+    description: 'Traverses a graph level by level from a source vertex, using a FIFO queue to visit all neighbours at depth d before moving on to depth d + 1. It runs in O(V + E) time and gives the shortest path, by edge count, to every reachable vertex.',
+    properties: [
+      "It visits all nodes one edge away, then all nodes two edges away, and so on.",
+      "It finds the path with the fewest edges to every node.",
+      "It ignores edge weights.",
+      "It is used for \"degrees of separation\" in social networks and in web crawlers."
+    ],
     applications: ["Finding shortest path in unweighted graphs", "Web crawlers", "Bipartite graph checking"],
     video: "https://www.youtube.com/results?search_query=bfs+graph",
         complexityDetails: {
@@ -519,7 +608,13 @@ while (!queue.isEmpty()) {
     id: 'dfsGraph',
     name: 'Depth-First Search (Graph)',
     category: 'Graph',
-    description: 'Plunges deep into a graph along a single path until it hits a dead end, then backtracks.',
+    description: 'Traverses a graph by following each path as deep as possible before backtracking, using a stack or recursion. It runs in O(V + E) time and underpins cycle detection, topological sorting, and connectivity analysis.',
+    properties: [
+      "It goes as deep as possible along one branch before backing up.",
+      "It is not meant for finding shortest paths.",
+      "Many other graph algorithms are built on top of it.",
+      "It is used to detect cycles, order tasks that depend on each other, and find connected groups of nodes."
+    ],
     applications: ["Finding connected components", "Solving puzzles with single solutions", "Path finding in complex networks"],
     video: "https://www.youtube.com/results?search_query=dfs+graph",
         complexityDetails: {
@@ -545,7 +640,19 @@ while (!stack.isEmpty()) {
     id: 'kruskals',
     name: 'Kruskal\'s MST',
     category: 'Graph',
-    description: 'Finds a Minimum Spanning Tree by globally sorting all edges from cheapest to most expensive, adding them one by one as long as they don\'t create a loop.',
+    description: 'A greedy algorithm that builds a Minimum Spanning Tree by considering edges in ascending order of weight and accepting each one that does not form a cycle. A Disjoint Set Union structure detects cycles efficiently, giving O(E log E) overall.',
+    properties: [
+      "It looks at all edges from cheapest to most expensive.",
+      "It skips any edge that would create a loop, using a structure called Union-Find to check quickly.",
+      "It still works when the graph is split into separate parts.",
+      "It suits graphs with relatively few edges."
+    ],
+    applications: [
+      "Designing cable, road or power networks",
+      "Grouping similar data points (clustering)",
+      "Planning delivery routes"
+    ],
+    video: "https://www.youtube.com/results?search_query=kruskal+algorithm+minimum+spanning+tree",
         complexityDetails: {
       best: "O(E log E) - Sorting the edges dominates the runtime. It always takes O(E log E) to sort them.",
       avg: "O(E log E) - Edge sorting and disjoint-set union-find operations dominate the complexity.",
@@ -566,7 +673,13 @@ for (let edge of sortedEdges) {
     id: 'prims',
     name: 'Prim\'s MST',
     category: 'Graph',
-    description: 'Finds a Minimum Spanning Tree by starting at a single node and growing the tree outward, always picking the cheapest edge that connects the tree to a new node.',
+    description: 'A greedy algorithm that grows a Minimum Spanning Tree from a single starting vertex, each time adding the lowest-weight edge that connects the tree to a vertex outside it. With a binary-heap priority queue it runs in O(E log V).',
+    properties: [
+      "It starts from one node and grows a single tree outward.",
+      "At each step it adds the cheapest edge that reaches a new node.",
+      "It needs every node to be connected.",
+      "It suits graphs where nodes have many edges."
+    ],
     applications: ["Designing robust computer networks", "Road network planning", "Minimizing wire usage"],
     video: "https://www.youtube.com/results?search_query=prims+algorithm",
         complexityDetails: {
@@ -589,7 +702,13 @@ while (visited.size < nodes.length) {
     id: 'dijkstraGraph',
     name: 'Dijkstra\'s Algorithm',
     category: 'Graph',
-    description: 'Calculates the shortest path from the start node to all other reachable nodes. Cannot handle negative edge weights.',
+    description: 'Computes single-source shortest paths in a weighted graph by repeatedly finalizing the closest unvisited vertex and relaxing its outgoing edges. It is correct only when all edge weights are non-negative.',
+    properties: [
+      "It finds the shortest distance from the start to every other node.",
+      "Once a node is finalized, its distance never changes again.",
+      "It can give wrong answers if any edge has a negative weight.",
+      "It is used in GPS navigation and internet routing."
+    ],
     applications: ["Internet routing (OSPF)", "Flight agenda planning", "Telecommunication networks"],
     video: "https://www.youtube.com/results?search_query=dijkstra+graph",
         complexityDetails: {
@@ -616,7 +735,14 @@ while (unvisitedNodes.length > 0) {
     id: 'bellmanFord',
     name: 'Bellman-Ford',
     category: 'Graph',
-    description: 'Calculates shortest paths like Dijkstra, but can handle negative edge weights by relaxing all edges |V| - 1 times.',
+    description: 'Computes single-source shortest paths by relaxing every edge |V| − 1 times. Unlike Dijkstra, it handles negative edge weights, and one extra pass detects negative-weight cycles. It runs in O(V·E) time.',
+    properties: [
+      "It works even when some edges have negative weights.",
+      "It can detect a negative loop, where distances could keep decreasing forever, and this app reports one if it exists.",
+      "It is slower than Dijkstra, because it checks every edge again and again.",
+      "In this app, a negative weight on an undirected edge counts as a negative loop, because you can go back and forth along it.",
+      "It is used to spot currency-exchange profit loops and in some network routing."
+    ],
     applications: ["Distance-vector routing protocols", "Arbitrage opportunities in finance", "Graphs with negative weights"],
     video: "https://www.youtube.com/results?search_query=bellman+ford+algorithm",
         complexityDetails: {
@@ -646,7 +772,13 @@ for (let edge of allEdges) {
     id: 'tarjans',
     name: 'Tarjan\'s SCC',
     category: 'Graph',
-    description: 'Finds Strongly Connected Components (clusters where every node can reach every other node) using a single DFS pass with low-link values.',
+    description: 'Finds all Strongly Connected Components of a directed graph in a single depth-first traversal by tracking each vertex\'s discovery index and low-link value. It runs in linear O(V + E) time.',
+    properties: [
+      "It works only on graphs with one-way (directed) edges.",
+      "It finds every group of nodes that can all reach each other.",
+      "It does this in a single pass over the graph.",
+      "It is used to find circular dependencies, for example between software modules."
+    ],
     applications: ["Analyzing social networks", "Resolving dependencies in build systems", "Finding strongly connected components"],
     video: "https://www.youtube.com/results?search_query=tarjans+algorithm",
         complexityDetails: {
@@ -677,7 +809,13 @@ for (let edge of allEdges) {
     id: 'nQueens',
     name: 'N-Queens',
     category: 'Backtracking',
-    description: 'Places N queens on an NxN chessboard so that no two queens threaten each other. Demonstrates classic backtracking by exploring paths and undoing bad placements.',
+    description: 'Places N queens on an N×N chessboard so that no two share a row, column, or diagonal. Queens are placed one row at a time, and the solver backtracks as soon as a placement leads to a conflict.',
+    properties: [
+      "No two queens may share a row, a column or a diagonal.",
+      "It abandons a placement as soon as two queens attack each other.",
+      "Every board size has a solution except 2×2 and 3×3.",
+      "The same approach is used in scheduling and seating problems."
+    ],
     applications: ["Constraint satisfaction problems", "Combinatorial optimization", "Classic backtracking education"],
     video: "https://www.youtube.com/results?search_query=n+queens+problem",
         complexityDetails: {
@@ -703,7 +841,13 @@ return false;`
     id: 'sudoku',
     name: 'Sudoku Solver',
     category: 'Backtracking',
-    description: 'Solves a 9x9 Sudoku grid by trying digits 1-9 in empty cells. If a digit causes a conflict later, it backtracks and tries the next digit.',
+    description: 'Fills a 9×9 grid so that every row, column, and 3×3 box contains the digits 1–9 exactly once. It works as a constraint-satisfaction search: it tries candidate digits in empty cells and backtracks whenever a constraint is violated.',
+    properties: [
+      "It fills the empty cells in order, trying digits 1 to 9 in each.",
+      "When a digit leads to a dead end, it erases it and tries the next one.",
+      "A well-made Sudoku has exactly one solution.",
+      "The same technique is used in timetable and resource-planning software."
+    ],
     applications: ["Logic puzzle generation", "Constraint programming", "Automated scheduling"],
     video: "https://www.youtube.com/results?search_query=sudoku+backtracking",
         complexityDetails: {
@@ -728,7 +872,13 @@ return false;`
     id: 'graphColoring',
     name: 'Graph m-Coloring',
     category: 'Backtracking',
-    description: 'Assigns up to m colors to graph nodes such that no two connected nodes share the same color. If it hits a dead end, it backtracks to try different color combinations.',
+    description: 'Assigns one of m colors to each vertex so that no two adjacent vertices share a color. Vertices are colored one at a time, and the solver backtracks whenever no valid color remains for the current vertex.',
+    properties: [
+      "It tries to colour every node with at most m colours, so that connected nodes never share a colour.",
+      "The fewest colours a graph needs is called its chromatic number.",
+      "For 3 or more colours, no known method is fast on every graph, so the solver may need to try many combinations.",
+      "It is used for exam timetabling, assigning radio frequencies, and making maps."
+    ],
     applications: ["Register allocation in compilers", "Scheduling and timetabling", "Frequency assignment in mobile networks"],
     video: "https://www.youtube.com/results?search_query=graph+coloring+algorithm",
         complexityDetails: {

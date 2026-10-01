@@ -6,8 +6,12 @@ export function AlgorithmInfo({ activeAlgorithm }) {
       <span className="eyebrow">learn more</span>
       <div className="algo-info__grid">
         <article className="algo-info__card">
-          <h3>Description</h3>
-          <p>{activeAlgorithm.description}</p>
+          <h3>Key properties</h3>
+          <ul>
+            {activeAlgorithm.properties.map((point) => (
+              <li key={point}>{point}</li>
+            ))}
+          </ul>
         </article>
 
         <article className="algo-info__card">
