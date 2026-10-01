@@ -31,3 +31,6 @@ playwright-report/
 test-results/
 blob-report/
 brain/
+
+# Local reports
+Weekly_Progress_Report_Filled.pdf
