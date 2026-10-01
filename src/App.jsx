@@ -9,17 +9,27 @@ import { LandingPage } from './views/LandingPage';
 import { ALGORITHMS } from './data/algorithms';
 import { CodeTracer } from './components/CodeTracer';
 import { ResizeHandle } from './components/ResizeHandle';
-import { Code2, Menu } from 'lucide-react';
+import { Clock, Code2, HardDrive, Menu } from 'lucide-react';
 import { AlgorithmInfo } from './components/AlgorithmInfo';
 import { ComplexityModal } from './components/ComplexityModal';
 import { QuizModal } from './components/QuizModal';
 import './index.css';
 
-const COMPLEXITY_FIELDS = [
-  { key: 'best', label: 'BEST', title: 'Best Case' },
-  { key: 'avg', label: 'AVG', title: 'Average Case' },
-  { key: 'worst', label: 'WORST', title: 'Worst Case' },
-  { key: 'space', label: 'SPACE', title: 'Space Complexity' },
+const COMPLEXITY_GROUPS = [
+  {
+    title: 'TIME COMPLEXITY',
+    Icon: Clock,
+    fields: [
+      { key: 'best', label: 'BEST', title: 'Best Case' },
+      { key: 'avg', label: 'AVG', title: 'Average Case' },
+      { key: 'worst', label: 'WORST', title: 'Worst Case' },
+    ],
+  },
+  {
+    title: 'SPACE',
+    Icon: HardDrive,
+    fields: [{ key: 'space', label: 'MEMORY', title: 'Space Complexity' }],
+  },
 ];
 
 function AlgorithmLayout() {
@@ -92,11 +102,21 @@ function AlgorithmLayout() {
             </div>
             <div className="algo-header__side">
               <div className="complexity-strip" aria-label="Complexity (click for details)">
-                {COMPLEXITY_FIELDS.map(({ key, label, title }) => (
-                  <button key={key} className="complexity-item" onClick={() => openModal(title, key)} title={`${title}: click for details`}>
-                    <span className="complexity-item__label">{label}</span>
-                    <span className="complexity-item__value">{activeAlgorithm.complexity[key]}</span>
-                  </button>
+                {COMPLEXITY_GROUPS.map(({ title: groupTitle, Icon, fields }) => (
+                  <div key={groupTitle} className="complexity-group">
+                    <span className="complexity-group__title">
+                      <Icon size={11} strokeWidth={2.4} aria-hidden="true" />
+                      {groupTitle}
+                    </span>
+                    <div className="complexity-group__items">
+                      {fields.map(({ key, label, title }) => (
+                        <button key={key} className="complexity-item" onClick={() => openModal(title, key)} title={`${title}: click for details`}>
+                          <span className="complexity-item__label">{label}</span>
+                          <span className="complexity-item__value">{activeAlgorithm.complexity[key]}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 ))}
               </div>
               <button
