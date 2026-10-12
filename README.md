@@ -2,6 +2,8 @@
 
 An algorithm visualizer for students learning data structures and algorithms. Watch 23 classic algorithms run one step at a time, then switch to **practice mode** and make each decision yourself. The app checks every move and explains mistakes.
 
+**Live demo:** [zaid-algorithms.vercel.app](https://zaid-algorithms.vercel.app)
+
 ![Quick Sort in watch mode](public/landing/step-watch.png)
 
 <p align="center">
