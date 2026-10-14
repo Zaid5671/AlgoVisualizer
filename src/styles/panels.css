@@ -102,8 +102,7 @@
 .about { display: grid; gap: 0.9rem; line-height: 1.6; font-size: 0.95rem; }
 .about__team { display: grid; gap: 0.6rem; padding-top: 0.9rem; border-top: 1px solid var(--border); }
 .about__team ul { list-style: none; display: flex; flex-wrap: wrap; gap: 0.5rem 1.25rem; }
-.about__team li { display: flex; align-items: center; gap: 0.5rem; font-weight: 600; }
-.about__team img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
+.about__team li { font-weight: 600; }
 .about__note { color: var(--ink-dim); font-size: 0.85rem; }
 
 /* =========================================================

@@ -3,10 +3,9 @@
 // GitHub repository. Leave empty to hide the "Source code" links.
 export const REPO_URL = '';
 
-// Photos live in public/team/. All three use a placeholder until real headshots are added;
-// use square images (about 320×320) with a similar background so the row looks consistent.
+// Shown by name only (no photos) on the landing page and in the sidebar's About dialog.
 export const TEAM = [
-  { name: 'Zaid Khan', photo: '/team/placeholder.jpg' },
-  { name: 'Mohit Rohra', photo: '/team/placeholder.jpg' },
-  { name: 'Afshaan Shaikh', photo: '/team/placeholder.jpg' },
+  { name: 'Zaid Khan' },
+  { name: 'Mohit Rohra' },
+  { name: 'Afshaan Shaikh' },
 ];

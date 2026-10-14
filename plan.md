@@ -57,7 +57,7 @@ Built; see progress.md. Agreed decisions, which still apply when the page is edi
 - **Structure:** header → hero (live Bubble Sort demo using the real `BarChart` and generator) → Watch / Practice / Check → 4 topic cards with algorithm chips → practice-mode spotlight (alternating screenshot and text) → features grid → suggested learning order → team → final call to action → footer.
 - **Screenshots are generated, not hand-made:** `npm run screenshots` (with the dev server running) rewrites `public/landing/*.png` from the live app, so they stay current after UI changes.
 - **AI tutor** is featured modestly: one card in the features grid with an honest caveat, not a hero section.
-- **Team:** names with circular photos, all from `src/data/site.js`. A placeholder photo is used until real headshots are provided.
+- **Team:** names only (no photos), from `src/data/site.js`. The sidebar About dialog lists names only too.
 - **Repo link:** `REPO_URL` in `src/data/site.js`; the footer link appears when it is set.
 - **Deep links:** `/algorithm?algo=<key>` opens one algorithm and `&mode=practice` opens it in practice mode.
 

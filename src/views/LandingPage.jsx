@@ -308,10 +308,7 @@ export function LandingPage() {
             <SectionHead eyebrow="Team" title="Built by" text="A mini-project by students of SPIT." />
             <ul className="lp-team">
               {TEAM.map(member => (
-                <li key={member.name} className="lp-member">
-                  <img src={member.photo} alt={member.name} loading="lazy" width="96" height="96" />
-                  <span>{member.name}</span>
-                </li>
+                <li key={member.name} className="lp-member">{member.name}</li>
               ))}
             </ul>
           </div>

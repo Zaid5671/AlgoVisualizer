@@ -122,7 +122,7 @@ export function Sidebar({ activeKey, onSelect, algorithms, isOpen, onToggle, onO
               <span className="eyebrow">Built by</span>
               <ul>
                 {TEAM.map(member => (
-                  <li key={member.name}><img src={member.photo} alt="" width="32" height="32" />{member.name}</li>
+                  <li key={member.name}>{member.name}</li>
                 ))}
               </ul>
               <p className="about__note">A mini-project by students of SPIT.</p>
